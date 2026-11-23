@@ -1,0 +1,2393 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro de Participantes — PROJETO SAAD</title>
+    <meta
+      name="description"
+      content="Ficha de cadastro simples e acolhedora para as senhoras participantes do PROJETO SAAD."
+    />
+    <meta property="og:title" content="Cadastro de Participantes — PROJETO SAAD" />
+    <meta
+      property="og:description"
+      content="Ficha de cadastro simples e acolhedora para as senhoras participantes do PROJETO SAAD."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Fontes legíveis e acolhedoras -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+              sans: ['"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- React 18 + Babel Standalone via CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      html {
+        font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+        font-size: 18px;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background-color: #F4F7FB;
+        color: #10203A;
+        line-height: 1.55;
+      }
+
+      h1, h2, h3, h4 {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        text-wrap: balance;
+      }
+
+      :focus-visible {
+        outline: 3px solid #0B4F9E;
+        outline-offset: 2px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-[#F4F7FB] text-[#10203A] antialiased selection:bg-[#D6E6FA] selection:text-[#083872]">
+    <div id="root">
+      <div class="flex min-h-screen items-center justify-center px-4 text-center">
+        <p class="text-[20px] font-semibold text-[#3B5275]">Carregando ficha de cadastro...</p>
+      </div>
+    </div>
+
+    <script type="text/babel">
+      const { useCallback, useEffect, useMemo, useRef, useState } = React;
+
+      // =========================================================================
+      // CONFIGURAÇÕES DO PROJETO
+      // =========================================================================
+      const PROJECT_CONFIG = {
+        name: 'PROJETO SAAD',
+        subtitle: 'Ficha de Cadastro das Participantes',
+        welcomeText:
+          'Preencha os dados com calma. Se precisar de ajuda, peça a uma voluntária ou familiar.',
+        logoBase64:
+          'data:image/jpeg;base64,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',
+      };
+
+      // Opcional: quando hospedado fora do HtmlService do Google Apps Script,
+      // você pode colar aqui a URL "/exec" do Web App do Apps Script.
+      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCFwS7gcIfHK6qgVBD_-mRJ0Ym1BYS0cthp6MiR3K6PB3b9F7GCsnpJ5SayRKliF_M/exec';
+
+      const STORAGE_KEYS = {
+        draft: 'projeto_saad_cadastro_rascunho_v1',
+        scriptUrl: 'projeto_saad_apps_script_url_v1',
+        demoCounter: 'projeto_saad_demo_protocol_seq_v1',
+      };
+
+      const SHIRT_SIZES = [
+        { size: 'PP', widthCm: 46, heightCm: 62, note: 'Manequim 34 a 36' },
+        { size: 'P', widthCm: 49, heightCm: 65, note: 'Manequim 38' },
+        { size: 'M', widthCm: 52, heightCm: 68, note: 'Manequim 40 a 42' },
+        { size: 'G', widthCm: 55, heightCm: 71, note: 'Manequim 44' },
+        { size: 'GG', widthCm: 59, heightCm: 74, note: 'Manequim 46 a 48' },
+        { size: 'XG', widthCm: 63, heightCm: 77, note: 'Manequim 50 a 52' },
+        { size: 'XGG', widthCm: 67, heightCm: 80, note: 'Manequim 54 ou mais' },
+      ];
+
+      const BRAZILIAN_UFS = [
+        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
+        'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI',
+        'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+      ];
+
+      const LGPD_CONSENT_TEXT =
+        'Autorizo o projeto a armazenar meus dados e a foto do meu documento exclusivamente para fins de cadastro e organização das atividades, conforme a Lei Geral de Proteção de Dados (LGPD).';
+
+      const EMPTY_FORM_FIELDS = {
+        nome: '',
+        telefone: '',
+        dataNascimento: '',
+        cep: '',
+        rua: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        uf: '',
+        tamanhoCamisa: '',
+        consentimentoLgpd: false,
+      };
+
+      const EMPTY_FORM_STATE = {
+        ...EMPTY_FORM_FIELDS,
+        fotoFrenteBase64: '',
+        fotoVersoBase64: '',
+      };
+
+      // =========================================================================
+      // LOGO E ÍCONES SVG AUTOCONTIDOS
+      // =========================================================================
+      function ProjectLogo() {
+        return (
+          <img
+            src={PROJECT_CONFIG.logoBase64}
+            alt={'Logotipo do ' + PROJECT_CONFIG.name}
+            className="h-full w-full object-cover"
+          />
+        );
+      }
+
+      const Icon = {
+        AlertCircle: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        ),
+        Check: ({ className = 'h-5 w-5 shrink-0', strokeWidth = 2.5 }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        ),
+        CheckCircle2: ({ className = 'h-6 w-6 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+        ),
+        Ruler: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" />
+            <path d="m14.5 12.5 2-2" />
+            <path d="m11.5 9.5 2-2" />
+            <path d="m8.5 6.5 2-2" />
+            <path d="m17.5 15.5 2-2" />
+          </svg>
+        ),
+        X: ({ className = 'h-6 w-6 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        ),
+        Camera: ({ className = 'h-6 w-6 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+            <circle cx="12" cy="13" r="3" />
+          </svg>
+        ),
+        Image: ({ className = 'h-6 w-6 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+            <circle cx="9" cy="9" r="2" />
+            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+          </svg>
+        ),
+        RefreshCw: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+            <path d="M21 3v5h-5" />
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+            <path d="M8 16H3v5" />
+          </svg>
+        ),
+        Trash2: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 6h18" />
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            <line x1="10" x2="10" y1="11" y2="17" />
+            <line x1="14" x2="14" y1="11" y2="17" />
+          </svg>
+        ),
+        Loader2: ({ className = 'h-6 w-6 shrink-0 animate-spin' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+        ),
+        Send: ({ className = 'h-6 w-6 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
+            <path d="m21.854 2.147-10.94 10.939" />
+          </svg>
+        ),
+        Settings: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        ),
+        FileCheck2: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4" />
+            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+            <path d="m3 15 2 2 4-4" />
+          </svg>
+        ),
+        MapPin: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        ),
+        ShieldCheck: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+        ),
+        UserPlus: ({ className = 'h-6 w-6 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" x2="19" y1="8" y2="14" />
+            <line x1="22" x2="16" y1="11" y2="11" />
+          </svg>
+        ),
+        Copy: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+          </svg>
+        ),
+        Save: ({ className = 'h-5 w-5 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+            <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+            <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+          </svg>
+        ),
+        RotateCcw: ({ className = 'h-4 w-4 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        ),
+        ExternalLink: ({ className = 'h-4 w-4 shrink-0' }) => (
+          <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M15 3h6v6" />
+            <path d="M10 14 21 3" />
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+          </svg>
+        ),
+      };
+
+      // =========================================================================
+      // MÁSCARAS, VALIDAÇÕES E CÁLCULO DE IDADE
+      // =========================================================================
+      function unmaskDigits(value) {
+        return String(value || '').replace(/\D/g, '');
+      }
+
+      function maskPhone(value) {
+        const digits = unmaskDigits(value).slice(0, 11);
+        if (digits.length === 0) return '';
+        if (digits.length <= 2) return '(' + digits;
+        if (digits.length <= 6) return '(' + digits.slice(0, 2) + ') ' + digits.slice(2);
+        if (digits.length <= 10) {
+          return '(' + digits.slice(0, 2) + ') ' + digits.slice(2, 6) + '-' + digits.slice(6);
+        }
+        return '(' + digits.slice(0, 2) + ') ' + digits.slice(2, 7) + '-' + digits.slice(7);
+      }
+
+      function isValidPhone(value) {
+        const digits = unmaskDigits(value);
+        if (digits.length !== 10 && digits.length !== 11) return false;
+        const ddd = Number(digits.slice(0, 2));
+        if (ddd < 11 || ddd > 99) return false;
+        if (/^(\d)\1+$/.test(digits)) return false;
+        return true;
+      }
+
+      function maskBirthDate(value) {
+        const digits = unmaskDigits(value).slice(0, 8);
+        if (digits.length <= 2) return digits;
+        if (digits.length <= 4) return digits.slice(0, 2) + '/' + digits.slice(2);
+        return digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4);
+      }
+
+      function calculateAge(dateStr, referenceDate = new Date()) {
+        const trimmed = String(dateStr || '').trim();
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) {
+          return { valid: false, age: null, reason: 'incomplete' };
+        }
+
+        const parts = trimmed.split('/');
+        const day = Number(parts[0]);
+        const month = Number(parts[1]);
+        const year = Number(parts[2]);
+
+        if (year < 1900 || month < 1 || month > 12 || day < 1 || day > 31) {
+          return { valid: false, age: null, reason: 'invalid' };
+        }
+
+        const birthDate = new Date(year, month - 1, day);
+        if (
+          birthDate.getFullYear() !== year ||
+          birthDate.getMonth() !== month - 1 ||
+          birthDate.getDate() !== day
+        ) {
+          return { valid: false, age: null, reason: 'invalid' };
+        }
+
+        const today = new Date(
+          referenceDate.getFullYear(),
+          referenceDate.getMonth(),
+          referenceDate.getDate()
+        );
+
+        if (birthDate.getTime() > today.getTime()) {
+          return { valid: false, age: null, reason: 'future' };
+        }
+
+        let age = today.getFullYear() - year;
+        const monthDiff = today.getMonth() - (month - 1);
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < day)) {
+          age -= 1;
+        }
+
+        if (age > 125) {
+          return { valid: false, age: null, reason: 'too_old' };
+        }
+
+        return { valid: true, age };
+      }
+
+      function maskCep(value) {
+        const digits = unmaskDigits(value).slice(0, 8);
+        if (digits.length <= 5) return digits;
+        return digits.slice(0, 5) + '-' + digits.slice(5);
+      }
+
+      function isValidCep(value) {
+        return unmaskDigits(value).length === 8;
+      }
+
+      function isValidFullName(value) {
+        const normalized = String(value || '').trim().replace(/\s+/g, ' ');
+        if (!normalized) return false;
+        const meaningfulWords = normalized
+          .split(' ')
+          .filter((word) => word.replace(/[^a-zA-ZÀ-ÿ]/g, '').length >= 2);
+        return meaningfulWords.length >= 2;
+      }
+
+      function isValidUf(value) {
+        const upper = String(value || '').trim().toUpperCase();
+        return BRAZILIAN_UFS.indexOf(upper) !== -1;
+      }
+
+      function validateRegistrationForm(state) {
+        const errors = {};
+
+        if (!state.nome.trim()) {
+          errors.nome = 'Por favor, escreva seu nome completo.';
+        } else if (!isValidFullName(state.nome)) {
+          errors.nome = 'Escreva o nome e pelo menos um sobrenome (ex.: Maria Silva).';
+        }
+
+        if (!unmaskDigits(state.telefone)) {
+          errors.telefone = 'Por favor, informe um número de telefone ou WhatsApp.';
+        } else if (!isValidPhone(state.telefone)) {
+          errors.telefone = 'Informe um telefone válido com DDD (10 ou 11 números).';
+        }
+
+        const ageResult = calculateAge(state.dataNascimento);
+        if (!unmaskDigits(state.dataNascimento)) {
+          errors.dataNascimento = 'Por favor, informe sua data de nascimento.';
+        } else if (!ageResult.valid) {
+          if (ageResult.reason === 'incomplete') {
+            errors.dataNascimento =
+              'Digite a data completa no formato dia/mês/ano (ex.: 15/05/1958).';
+          } else if (ageResult.reason === 'future') {
+            errors.dataNascimento = 'A data de nascimento não pode ser no futuro.';
+          } else {
+            errors.dataNascimento = 'Esta data de nascimento não existe. Confira o dia e o mês.';
+          }
+        }
+
+        if (!unmaskDigits(state.cep)) {
+          errors.cep = 'Por favor, informe o CEP do seu endereço.';
+        } else if (!isValidCep(state.cep)) {
+          errors.cep = 'O CEP precisa ter 8 números (ex.: 01001-000).';
+        }
+
+        if (!state.rua.trim()) {
+          errors.rua = 'Por favor, informe o nome da rua, avenida ou travessa.';
+        }
+
+        if (!state.numero.trim()) {
+          errors.numero = 'Informe o número da casa (ou escreva S/N se não tiver).';
+        }
+
+        if (!state.bairro.trim()) {
+          errors.bairro = 'Por favor, informe o bairro.';
+        }
+
+        if (!state.cidade.trim()) {
+          errors.cidade = 'Por favor, informe a cidade.';
+        }
+
+        if (!state.uf.trim()) {
+          errors.uf = 'Informe o estado (UF).';
+        } else if (!isValidUf(state.uf)) {
+          errors.uf = 'Informe uma sigla de estado válida (ex.: SP, RJ, MG).';
+        }
+
+        if (!state.tamanhoCamisa) {
+          errors.tamanhoCamisa = 'Escolha o tamanho da sua camisa tocando em uma das opções.';
+        }
+
+        if (!state.fotoFrenteBase64) {
+          errors.fotoFrenteBase64 =
+            'Tire ou escolha uma foto da frente do seu documento (RG ou CNH).';
+        }
+
+        if (!state.consentimentoLgpd) {
+          errors.consentimentoLgpd = 'Marque a caixinha acima para autorizar o envio do seu cadastro.';
+        }
+
+        return {
+          isValid: Object.keys(errors).length === 0,
+          errors,
+          computedAge: ageResult.valid ? ageResult.age : null,
+        };
+      }
+
+      function buildSubmissionPayload(state, idade) {
+        return {
+          nome: state.nome.trim().replace(/\s+/g, ' '),
+          telefone: maskPhone(state.telefone),
+          dataNascimento: state.dataNascimento.trim(),
+          idade,
+          cep: maskCep(state.cep),
+          rua: state.rua.trim(),
+          numero: state.numero.trim(),
+          complemento: state.complemento.trim(),
+          bairro: state.bairro.trim(),
+          cidade: state.cidade.trim(),
+          uf: state.uf.trim().toUpperCase(),
+          tamanhoCamisa: state.tamanhoCamisa,
+          consentimentoLgpd: state.consentimentoLgpd,
+          fotoFrenteBase64: state.fotoFrenteBase64,
+          fotoVersoBase64: state.fotoVersoBase64,
+        };
+      }
+
+      function generateDemoProtocol(sequenceNumber) {
+        const year = new Date().getFullYear();
+        const safeSeq = Math.max(1, Math.floor(sequenceNumber));
+        return 'CAD-' + year + '-' + String(safeSeq).padStart(4, '0');
+      }
+
+      function isValidAppsScriptUrl(url) {
+        const trimmed = String(url || '').trim();
+        if (!trimmed) return false;
+        try {
+          const parsed = new URL(trimmed);
+          return parsed.protocol === 'https:';
+        } catch {
+          return false;
+        }
+      }
+
+      function extractDraftFields(state) {
+        return {
+          nome: state.nome,
+          telefone: state.telefone,
+          dataNascimento: state.dataNascimento,
+          cep: state.cep,
+          rua: state.rua,
+          numero: state.numero,
+          complemento: state.complemento,
+          bairro: state.bairro,
+          cidade: state.cidade,
+          uf: state.uf,
+          tamanhoCamisa: state.tamanhoCamisa,
+          consentimentoLgpd: state.consentimentoLgpd,
+        };
+      }
+
+      // =========================================================================
+      // COMPRESSÃO DE IMAGEM NO NAVEGADOR (MÁX 1600PX, JPEG 0.8)
+      // =========================================================================
+      function compressDocumentImage(file) {
+        return new Promise((resolve, reject) => {
+          if (!file || !file.type || !file.type.startsWith('image/')) {
+            reject(new Error('Por favor, selecione um arquivo de imagem (foto).'));
+            return;
+          }
+
+          const MAX_SIDE = 1600;
+          const JPEG_QUALITY = 0.8;
+          const objectUrl = URL.createObjectURL(file);
+          const img = new Image();
+
+          img.onload = () => {
+            try {
+              const width = img.naturalWidth || img.width || MAX_SIDE;
+              const height = img.naturalHeight || img.height || MAX_SIDE;
+              const longest = Math.max(width, height);
+              const scale = longest > MAX_SIDE ? MAX_SIDE / longest : 1;
+              const targetWidth = Math.round(width * scale);
+              const targetHeight = Math.round(height * scale);
+
+              const canvas = document.createElement('canvas');
+              canvas.width = targetWidth;
+              canvas.height = targetHeight;
+
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                reject(new Error('Não foi possível preparar a foto no navegador.'));
+                return;
+              }
+
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, targetWidth, targetHeight);
+              ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+              const base64 = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+              resolve({ base64, width: targetWidth, height: targetHeight });
+            } catch {
+              reject(new Error('Não conseguimos processar esta foto. Tente tirar outra.'));
+            } finally {
+              URL.revokeObjectURL(objectUrl);
+            }
+          };
+
+          img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Não conseguimos abrir esta foto. Tente tirar outra.'));
+          };
+
+          img.src = objectUrl;
+        });
+      }
+
+      // =========================================================================
+      // SERVIÇOS: VIACEP + ENVIO (HTMLSERVICE / FETCH / MODO DEMONSTRAÇÃO)
+      // =========================================================================
+      function hasGoogleScriptRun() {
+        return Boolean(
+          typeof window !== 'undefined' &&
+            window.google &&
+            window.google.script &&
+            window.google.script.run &&
+            typeof window.google.script.run.salvarCadastro === 'function'
+        );
+      }
+
+      async function lookupCep(cepValue) {
+        const digits = unmaskDigits(cepValue);
+        if (digits.length !== 8) return { found: false };
+
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+
+        try {
+          const response = await fetch('https://viacep.com.br/ws/' + digits + '/json/', {
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            return {
+              found: false,
+              errorMessage:
+                'Não foi possível consultar o CEP agora. Preencha o endereço manualmente.',
+            };
+          }
+          const json = await response.json();
+          if (json.erro) {
+            return {
+              found: false,
+              errorMessage: 'CEP não encontrado. Você pode preencher o endereço abaixo manualmente.',
+            };
+          }
+          return {
+            found: true,
+            data: {
+              rua: json.logradouro || '',
+              bairro: json.bairro || '',
+              cidade: json.localidade || '',
+              uf: json.uf || '',
+            },
+          };
+        } catch {
+          return {
+            found: false,
+            errorMessage: 'Sem resposta da busca de CEP. Preencha o endereço abaixo manualmente.',
+          };
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      }
+
+      async function submitRegistration(payload, appsScriptUrl) {
+        // 1. Execução nativa dentro do HtmlService do Google Apps Script
+        if (hasGoogleScriptRun()) {
+          return new Promise((resolve) => {
+            window.google.script.run
+              .withSuccessHandler((res) => {
+                if (!res || typeof res !== 'object') {
+                  resolve({ ok: false, error: 'Resposta inesperada do servidor.' });
+                  return;
+                }
+                resolve({
+                  ok: Boolean(res.ok),
+                  protocolo: res.protocolo,
+                  error: res.error,
+                  isDemo: false,
+                });
+              })
+              .withFailureHandler((err) => {
+                resolve({
+                  ok: false,
+                  error:
+                    err && err.message
+                      ? err.message
+                      : 'Erro ao salvar cadastro na planilha. Tente novamente.',
+                });
+              })
+              .salvarCadastro(payload);
+          });
+        }
+
+        // 2. Execução via HTTP POST para URL externa do Web App do Apps Script
+        const cleanUrl = String(appsScriptUrl || '').trim();
+        if (cleanUrl) {
+          try {
+            const response = await fetch(cleanUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify(payload),
+            });
+            const rawText = await response.text();
+            let parsed = null;
+            try {
+              parsed = JSON.parse(rawText);
+            } catch {
+              parsed = null;
+            }
+            if (!response.ok || !parsed) {
+              return {
+                ok: false,
+                error:
+                  'Não foi possível concluir o envio para a planilha. Verifique a conexão ou a configuração do link.',
+              };
+            }
+            if (!parsed.ok) {
+              return {
+                ok: false,
+                error: parsed.error || 'Ocorreu um erro ao salvar o cadastro.',
+              };
+            }
+            return { ok: true, protocolo: parsed.protocolo, isDemo: false };
+          } catch {
+            return {
+              ok: false,
+              error: 'Falha na conexão com a planilha. Confira sua internet e tente novamente.',
+            };
+          }
+        }
+
+        // 3. Modo Demonstração quando aberto localmente sem Apps Script
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
+        let nextSequence = 1;
+        try {
+          const savedSeq = Number(window.localStorage.getItem(STORAGE_KEYS.demoCounter) || '0');
+          nextSequence = Number.isFinite(savedSeq) && savedSeq >= 0 ? savedSeq + 1 : 1;
+          window.localStorage.setItem(STORAGE_KEYS.demoCounter, String(nextSequence));
+        } catch {
+          nextSequence = 1;
+        }
+        return {
+          ok: true,
+          protocolo: generateDemoProtocol(nextSequence),
+          isDemo: true,
+        };
+      }
+
+      // =========================================================================
+      // TEMPLATE DO CÓDIGO Codigo.gs PARA COPIAR
+      // =========================================================================
+      function getCodigoGsTemplate() {
+        return [
+          '// ============================================================================',
+          '// GOOGLE APPS SCRIPT — CADASTRO DAS PARTICIPANTES (HTMLSERVICE + PLANILHA + DRIVE)',
+          '// ============================================================================',
+          'const FOLDER_ID = "COLE_AQUI_O_ID_DA_PASTA_DO_DRIVE";',
+          '',
+          'const PAGE_TITLE = "Cadastro de Participantes — PROJETO SAAD";',
+          'const SHEET_CADASTROS = "Cadastros";',
+          'const SHEET_RESUMO = "Resumo Camisas";',
+          '',
+          'const CABECALHO_CADASTROS = [',
+          '  "Protocolo", "Data/Hora", "Nome Completo", "Telefone", "Data de Nascimento",',
+          '  "Idade", "Tamanho da Camisa", "CEP", "Rua", "Número", "Complemento",',
+          '  "Bairro", "Cidade", "UF", "Link Foto Frente", "Link Foto Verso", "Consentimento LGPD"',
+          '];',
+          '',
+          'function doGet() {',
+          '  return HtmlService.createHtmlOutputFromFile("index")',
+          '    .setTitle(PAGE_TITLE)',
+          '    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)',
+          '    .addMetaTag("viewport", "width=device-width, initial-scale=1");',
+          '}',
+          '',
+          'function salvarCadastro(dados) {',
+          '  const lock = LockService.getScriptLock();',
+          '  try {',
+          '    lock.waitLock(30000);',
+          '    if (!dados || typeof dados !== "object") {',
+          '      return { ok: false, error: "Nenhum dado foi recebido no envio." };',
+          '    }',
+          '    const ss = SpreadsheetApp.getActiveSpreadsheet();',
+          '    const abaCadastros = garantirAbaCadastros(ss);',
+          '    garantirAbaResumoCamisas(ss);',
+          '',
+          '    const telefoneNovoLimpo = String(dados.telefone || "").replace(/\\D/g, "");',
+          '    if (!telefoneNovoLimpo) return { ok: false, error: "Telefone não informado." };',
+          '    if (telefoneJaCadastrado(abaCadastros, telefoneNovoLimpo)) {',
+          '      return { ok: false, error: "Já existe um cadastro com este telefone." };',
+          '    }',
+          '    if (!FOLDER_ID || FOLDER_ID === "COLE_AQUI_O_ID_DA_PASTA_DO_DRIVE") {',
+          '      return { ok: false, error: "O ID da pasta do Google Drive ainda não foi configurado." };',
+          '    }',
+          '',
+          '    const protocoloGerado = gerarProximoProtocolo(abaCadastros);',
+          '    const nomeParaArquivo = sanitizarNomeArquivo(dados.nome || "PARTICIPANTE");',
+          '    const pastaDrive = DriveApp.getFolderById(FOLDER_ID);',
+          '',
+          '    let linkFotoFrente = "";',
+          '    if (dados.fotoFrenteBase64) {',
+          '      linkFotoFrente = salvarFotoNoDrive(pastaDrive, dados.fotoFrenteBase64, protocoloGerado + "_" + nomeParaArquivo + "_FRENTE.jpg");',
+          '    }',
+          '    let linkFotoVerso = "";',
+          '    if (dados.fotoVersoBase64) {',
+          '      linkFotoVerso = salvarFotoNoDrive(pastaDrive, dados.fotoVersoBase64, protocoloGerado + "_" + nomeParaArquivo + "_VERSO.jpg");',
+          '    }',
+          '',
+          '    const dataHoraFormatada = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "America/Sao_Paulo", "dd/MM/yyyy HH:mm:ss");',
+          '    abaCadastros.appendRow([',
+          '      protocoloGerado, dataHoraFormatada, String(dados.nome || "").trim(), String(dados.telefone || "").trim(),',
+          '      String(dados.dataNascimento || "").trim(), Number(dados.idade || 0), String(dados.tamanhoCamisa || "").trim(),',
+          '      String(dados.cep || "").trim(), String(dados.rua || "").trim(), String(dados.numero || "").trim(),',
+          '      String(dados.complemento || "").trim(), String(dados.bairro || "").trim(), String(dados.cidade || "").trim(),',
+          '      String(dados.uf || "").trim().toUpperCase(), linkFotoFrente, linkFotoVerso,',
+          '      dados.consentimentoLgpd ? "Sim (Autorizado)" : "Não"',
+          '    ]);',
+          '    return { ok: true, protocolo: protocoloGerado };',
+          '  } catch (erro) {',
+          '    return { ok: false, error: "Erro ao salvar cadastro: " + (erro && erro.message ? erro.message : String(erro)) };',
+          '  } finally {',
+          '    lock.releaseLock();',
+          '  }',
+          '}',
+          '',
+          'function doPost(e) {',
+          '  try {',
+          '    if (!e || !e.postData || !e.postData.contents) {',
+          '      return criarRespostaJson({ ok: false, error: "Nenhum dado foi recebido no envio." });',
+          '    }',
+          '    return criarRespostaJson(salvarCadastro(JSON.parse(e.postData.contents)));',
+          '  } catch (erro) {',
+          '    return criarRespostaJson({ ok: false, error: "Erro ao processar: " + String(erro) });',
+          '  }',
+          '}',
+          '',
+          'function garantirAbaCadastros(ss) {',
+          '  let aba = ss.getSheetByName(SHEET_CADASTROS);',
+          '  if (!aba) {',
+          '    aba = ss.insertSheet(SHEET_CADASTROS);',
+          '    aba.appendRow(CABECALHO_CADASTROS);',
+          '    aba.getRange(1, 1, 1, CABECALHO_CADASTROS.length).setFontWeight("bold").setBackground("#0B4F9E").setFontColor("#FFFFFF").setHorizontalAlignment("center");',
+          '    aba.setFrozenRows(1);',
+          '    aba.autoResizeColumns(1, CABECALHO_CADASTROS.length);',
+          '  }',
+          '  return aba;',
+          '}',
+          '',
+          'function garantirAbaResumoCamisas(ss) {',
+          '  let aba = ss.getSheetByName(SHEET_RESUMO);',
+          '  if (!aba) {',
+          '    aba = ss.insertSheet(SHEET_RESUMO);',
+          '    aba.getRange("A1:B1").setValues([["Tamanho da Camisa", "Quantidade"]]).setFontWeight("bold").setBackground("#0B4F9E").setFontColor("#FFFFFF");',
+          '    const tamanhos = ["PP", "P", "M", "G", "GG", "XG", "XGG"];',
+          '    for (let i = 0; i < tamanhos.length; i++) {',
+          '      const linha = i + 2;',
+          '      aba.getRange(linha, 1).setValue(tamanhos[i]);',
+          '      aba.getRange(linha, 2).setFormula("=COUNTIF(" + SHEET_CADASTROS + "!G2:G, A" + linha + ")");',
+          '    }',
+          '    const linhaTotal = tamanhos.length + 2;',
+          '    aba.getRange(linhaTotal, 1).setValue("Total Geral").setFontWeight("bold");',
+          '    aba.getRange(linhaTotal, 2).setFormula("=SUM(B2:B" + (linhaTotal - 1) + ")").setFontWeight("bold");',
+          '    aba.setFrozenRows(1);',
+          '    aba.autoResizeColumns(1, 2);',
+          '  }',
+          '  return aba;',
+          '}',
+          '',
+          'function telefoneJaCadastrado(abaCadastros, telefoneNovoLimpo) {',
+          '  const ultimaLinha = abaCadastros.getLastRow();',
+          '  if (ultimaLinha <= 1) return false;',
+          '  const valores = abaCadastros.getRange(2, 4, ultimaLinha - 1, 1).getValues();',
+          '  for (let i = 0; i < valores.length; i++) {',
+          '    if (String(valores[i][0] || "").replace(/\\D/g, "") === telefoneNovoLimpo) return true;',
+          '  }',
+          '  return false;',
+          '}',
+          '',
+          'function gerarProximoProtocolo(abaCadastros) {',
+          '  const ano = new Date().getFullYear();',
+          '  const seq = Math.max(1, abaCadastros.getLastRow());',
+          '  return "CAD-" + ano + "-" + ("0000" + seq).slice(-4);',
+          '}',
+          '',
+          'function salvarFotoNoDrive(pastaDrive, base64String, nomeArquivo) {',
+          '  const base64Limpo = String(base64String).replace(/^data:image\\/[a-zA-Z0-9.+-]+;base64,/, "");',
+          '  const blob = Utilities.newBlob(Utilities.base64Decode(base64Limpo), "image/jpeg", nomeArquivo);',
+          '  return pastaDrive.createFile(blob).getUrl();',
+          '}',
+          '',
+          'function sanitizarNomeArquivo(nome) {',
+          '  return String(nome).normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").trim().replace(/\\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "").toUpperCase();',
+          '}',
+          '',
+          'function criarRespostaJson(obj) {',
+          '  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);',
+          '}',
+        ].join('\n');
+      }
+
+      // =========================================================================
+      // COMPONENTES DE INTERFACE
+      // =========================================================================
+      function getInputClassName(hasError, extraClassName = '') {
+        const base =
+          'w-full min-h-[56px] rounded-xl border-2 bg-white px-4 py-3 text-[20px] font-medium text-[#10203A] placeholder:text-[#788CA8] transition-colors focus:outline-none';
+        const borderState = hasError
+          ? 'border-[#B91C1C] bg-[#FFF8F8] focus:border-[#991B1B]'
+          : 'border-[#BCCCE0] hover:border-[#7B99C0] focus:border-[#0B4F9E]';
+        return (base + ' ' + borderState + ' ' + extraClassName).trim();
+      }
+
+      function FormField({ id, label, optional = false, hint, error, children }) {
+        return (
+          <div className="space-y-2" data-field-id={id}>
+            <label
+              htmlFor={id}
+              className="block text-[18px] sm:text-[19px] font-semibold leading-snug text-[#10203A]"
+            >
+              <span>{label}</span>
+              {optional && (
+                <span className="ml-2 text-[16px] font-normal text-[#4F6585]">(opcional)</span>
+              )}
+            </label>
+
+            {hint && (
+              <p id={id + '-hint'} className="text-[16px] leading-relaxed text-[#3B5275]">
+                {hint}
+              </p>
+            )}
+
+            {children}
+
+            {error && (
+              <p
+                id={id + '-error'}
+                role="alert"
+                className="flex items-start gap-2 pt-1 text-[17px] font-medium leading-snug text-[#B91C1C]"
+              >
+                <Icon.AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>{error}</span>
+              </p>
+            )}
+          </div>
+        );
+      }
+
+      function ProjectHeader({ isDemoMode, onOpenConfig }) {
+        return (
+          <React.Fragment>
+            {isDemoMode && (
+              <div
+                role="region"
+                aria-label="Aviso de modo demonstração"
+                className="border-b border-[#C8D9EE] bg-[#EAF2FC] px-4 py-2.5 text-center"
+              >
+                <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[15px] text-[#173763]">
+                  <span>
+                    <strong>Modo Demonstração:</strong> os cadastros são simulados neste aparelho.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onOpenConfig}
+                    className="inline-flex min-h-[36px] items-center gap-1.5 font-bold text-[#0B4F9E] underline decoration-2 underline-offset-4 hover:text-[#083872]"
+                  >
+                    <Icon.Settings className="h-4 w-4 shrink-0" />
+                    <span>Configurar planilha</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <header className="border-b border-[#D7E3F2] bg-white shadow-2xs">
+              <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:gap-6 sm:px-6 lg:px-8">
+                <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#D4AF37] bg-[#0B4F9E] shadow-xs sm:h-24 sm:w-32">
+                  <ProjectLogo />
+                </div>
+
+                <div className="min-w-0">
+                  <h1 className="text-[24px] font-extrabold leading-tight tracking-tight text-[#0A2E5C] sm:text-[32px]">
+                    {PROJECT_CONFIG.name}
+                  </h1>
+                  <p className="mt-1 text-[18px] font-semibold text-[#0B4F9E]">
+                    {PROJECT_CONFIG.subtitle}
+                  </p>
+                </div>
+              </div>
+            </header>
+          </React.Fragment>
+        );
+      }
+
+      function ShirtSizeSelector({ value, error, onChange, onOpenSizeChart }) {
+        return (
+          <div className="space-y-3" data-field-id="tamanhoCamisa">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <span
+                id="tamanhoCamisa-label"
+                className="text-[18px] sm:text-[19px] font-semibold leading-snug text-[#10203A]"
+              >
+                Tamanho da camisa
+              </span>
+
+              <button
+                type="button"
+                onClick={onOpenSizeChart}
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-lg px-3 py-1.5 text-[17px] font-semibold text-[#0B4F9E] underline decoration-2 underline-offset-4 transition-colors hover:bg-[#EAF2FC] hover:text-[#083872]"
+              >
+                <Icon.Ruler className="h-5 w-5 shrink-0" />
+                <span>Ver tabela de medidas</span>
+              </button>
+            </div>
+
+            <p className="text-[16px] text-[#3B5275]">
+              Toque no tamanho que você costuma vestir:
+            </p>
+
+            <div
+              role="radiogroup"
+              aria-labelledby="tamanhoCamisa-label"
+              className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-7"
+            >
+              {SHIRT_SIZES.map((item) => {
+                const isSelected = value === item.size;
+                return (
+                  <button
+                    key={item.size}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => onChange(item.size)}
+                    className={
+                      'flex min-h-[58px] items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-3 text-[20px] font-bold transition-all active:scale-[0.98] ' +
+                      (isSelected
+                        ? 'border-[#0B4F9E] bg-[#0B4F9E] text-white shadow-sm'
+                        : error
+                          ? 'border-[#DC8A8A] bg-white text-[#10203A] hover:border-[#0B4F9E] hover:bg-[#F0F6FD]'
+                          : 'border-[#BCCCE0] bg-white text-[#10203A] hover:border-[#0B4F9E] hover:bg-[#F0F6FD]')
+                    }
+                  >
+                    {isSelected && <Icon.Check className="h-5 w-5 shrink-0" />}
+                    <span>{item.size}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {error && (
+              <p
+                role="alert"
+                className="flex items-start gap-2 pt-1 text-[17px] font-medium leading-snug text-[#B91C1C]"
+              >
+                <Icon.AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>{error}</span>
+              </p>
+            )}
+          </div>
+        );
+      }
+
+      function SizeChartModal({ isOpen, onClose }) {
+        useEffect(() => {
+          if (!isOpen) return;
+          const handleKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+          };
+          window.addEventListener('keydown', handleKeyDown);
+          return () => window.removeEventListener('keydown', handleKeyDown);
+        }, [isOpen, onClose]);
+
+        if (!isOpen) return null;
+
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center bg-[#091526]/60 p-0 backdrop-blur-xs sm:items-center sm:p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tabela-medidas-titulo"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) onClose();
+            }}
+          >
+            <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-3xl sm:p-8">
+              <div className="flex items-start justify-between gap-4 border-b border-[#E3ECF7] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EAF2FC] text-[#0B4F9E]">
+                    <Icon.Ruler className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h2
+                      id="tabela-medidas-titulo"
+                      className="text-[22px] font-bold leading-tight text-[#10203A]"
+                    >
+                      Tabela de medidas das camisas
+                    </h2>
+                    <p className="mt-0.5 text-[16px] text-[#3B5275]">
+                      Medidas aproximadas da peça esticada na mesa (em centímetros)
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Fechar tabela de medidas"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#CBD9EC] text-[#1E3A63] transition-colors hover:bg-[#F0F6FD]"
+                >
+                  <Icon.X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="mt-5 overflow-hidden rounded-2xl border border-[#D4E1F2]">
+                <table className="w-full border-collapse text-left">
+                  <thead>
+                    <tr className="bg-[#EAF2FC] text-[17px] font-bold text-[#0F2E59]">
+                      <th className="px-4 py-3.5">Tamanho</th>
+                      <th className="px-4 py-3.5">Largura</th>
+                      <th className="px-4 py-3.5">Altura</th>
+                      <th className="hidden px-4 py-3.5 sm:table-cell">Referência</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E3ECF7] text-[18px] text-[#10203A]">
+                    {SHIRT_SIZES.map((item) => (
+                      <tr key={item.size} className="hover:bg-[#F8FAFE]">
+                        <td className="px-4 py-3.5 font-bold text-[#0B4F9E]">{item.size}</td>
+                        <td className="px-4 py-3.5 font-medium tabular-nums">{item.widthCm} cm</td>
+                        <td className="px-4 py-3.5 font-medium tabular-nums">{item.heightCm} cm</td>
+                        <td className="hidden px-4 py-3.5 text-[16px] text-[#3B5275] sm:table-cell">
+                          {item.note}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="mt-4 text-[16px] leading-relaxed text-[#3B5275]">
+                Dica: se ficar em dúvida entre dois tamanhos, escolha o maior para ficar mais confortável.
+              </p>
+
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex min-h-[54px] w-full items-center justify-center rounded-xl bg-[#0B4F9E] px-6 py-3 text-[19px] font-bold text-white transition-colors hover:bg-[#083872]"
+                >
+                  Fechar tabela
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function PhotoCaptureField({
+        id,
+        title,
+        description,
+        required = false,
+        value,
+        error,
+        onChange,
+      }) {
+        const cameraInputRef = useRef(null);
+        const galleryInputRef = useRef(null);
+        const [isProcessing, setIsProcessing] = useState(false);
+        const [localError, setLocalError] = useState('');
+
+        const handleFileSelected = async (event) => {
+          const file = event.target.files && event.target.files[0];
+          event.target.value = '';
+          if (!file) return;
+
+          setLocalError('');
+          setIsProcessing(true);
+          try {
+            const compressed = await compressDocumentImage(file);
+            onChange(compressed.base64);
+          } catch (err) {
+            setLocalError(
+              err && err.message
+                ? err.message
+                : 'Não foi possível preparar esta foto. Tente novamente.'
+            );
+          } finally {
+            setIsProcessing(false);
+          }
+        };
+
+        const displayError = localError || error;
+
+        return (
+          <div
+            data-field-id={id}
+            className={
+              'rounded-2xl p-5 transition-colors sm:p-6 ' +
+              (displayError
+                ? 'border-2 border-[#B91C1C] bg-[#FFF8F8]'
+                : value
+                  ? 'bg-[#EDF4FC]'
+                  : 'bg-[#F4F8FD]')
+            }
+          >
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="text-[19px] sm:text-[20px] font-bold text-[#10203A]">{title}</h3>
+                <span className="text-[16px] font-medium text-[#4F6585]">
+                  {required ? 'Obrigatória' : 'Opcional'}
+                </span>
+              </div>
+              <p className="text-[17px] leading-relaxed text-[#2C4366]">{description}</p>
+            </div>
+
+            <input
+              ref={cameraInputRef}
+              id={id + '-camera'}
+              data-testid={id + '-camera-input'}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileSelected}
+              aria-hidden="true"
+              tabIndex={-1}
+              className="hidden"
+            />
+            <input
+              ref={galleryInputRef}
+              id={id + '-gallery'}
+              data-testid={id + '-gallery-input'}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelected}
+              aria-hidden="true"
+              tabIndex={-1}
+              className="hidden"
+            />
+
+            {isProcessing ? (
+              <div className="mt-5 flex min-h-[120px] flex-col items-center justify-center gap-3 rounded-xl border border-[#CBD9EC] bg-white p-5 text-center">
+                <Icon.Loader2 className="h-8 w-8 animate-spin text-[#0B4F9E]" />
+                <p className="text-[18px] font-semibold text-[#10203A]">
+                  Preparando a foto para envio rápido...
+                </p>
+              </div>
+            ) : value ? (
+              <div className="mt-5 space-y-4">
+                <div className="overflow-hidden rounded-xl border border-[#BDD0E8] bg-white">
+                  <img
+                    src={value}
+                    alt={'Prévia da ' + title.toLowerCase()}
+                    referrerPolicy="no-referrer"
+                    className="max-h-[260px] w-full object-contain bg-[#F0F5FB]"
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="flex items-center gap-2 text-[17px] font-semibold text-[#166534]">
+                    <Icon.CheckCircle2 className="h-5 w-5 shrink-0" />
+                    <span>Foto pronta</span>
+                  </p>
+
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => galleryInputRef.current && galleryInputRef.current.click()}
+                      className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-[#0B4F9E] bg-white px-4 py-2.5 text-[17px] font-bold text-[#0B4F9E] transition-colors hover:bg-[#EAF2FC]"
+                    >
+                      <Icon.RefreshCw className="h-5 w-5 shrink-0" />
+                      <span>Trocar foto</span>
+                    </button>
+
+                    {!required && (
+                      <button
+                        type="button"
+                        onClick={() => onChange('')}
+                        className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-[#C3D3E8] bg-white px-4 py-2.5 text-[17px] font-semibold text-[#334C70] transition-colors hover:bg-[#EBF2FA]"
+                      >
+                        <Icon.Trash2 className="h-5 w-5 shrink-0" />
+                        <span>Remover</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current && cameraInputRef.current.click()}
+                  className="flex min-h-[56px] w-full items-center justify-center gap-3 rounded-xl bg-[#0B4F9E] px-5 py-3 text-[18px] font-bold text-white shadow-xs transition-colors hover:bg-[#083872] active:scale-[0.99]"
+                >
+                  <Icon.Camera className="h-6 w-6 shrink-0" />
+                  <span>Tirar foto agora</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => galleryInputRef.current && galleryInputRef.current.click()}
+                  className="flex min-h-[56px] w-full items-center justify-center gap-3 rounded-xl border-2 border-[#0B4F9E] bg-white px-5 py-3 text-[18px] font-bold text-[#0B4F9E] transition-colors hover:bg-[#EAF2FC] active:scale-[0.99]"
+                >
+                  <Icon.Image className="h-6 w-6 shrink-0" />
+                  <span>Escolher da galeria</span>
+                </button>
+              </div>
+            )}
+
+            {displayError && (
+              <p
+                role="alert"
+                className="mt-3 flex items-start gap-2 text-[17px] font-medium leading-snug text-[#B91C1C]"
+              >
+                <Icon.AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>{displayError}</span>
+              </p>
+            )}
+          </div>
+        );
+      }
+
+      function SuccessScreen({ nome, protocolo, isDemo, onStartNew }) {
+        return (
+          <section
+            aria-labelledby="cadastro-sucesso-titulo"
+            className="rounded-3xl border border-[#D4E1F2] bg-white p-6 text-center shadow-xs sm:p-10"
+          >
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#DCFCE7] text-[#166534]">
+              <Icon.CheckCircle2 className="h-11 w-11" />
+            </div>
+
+            <h2
+              id="cadastro-sucesso-titulo"
+              className="mt-6 text-[28px] sm:text-[32px] font-extrabold leading-tight text-[#10203A]"
+            >
+              Cadastro realizado com sucesso!
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-lg text-[19px] leading-relaxed text-[#2C4366]">
+              Seja muito bem-vinda, <strong className="text-[#10203A]">{nome}</strong>. Seus dados
+              foram registrados com segurança no <strong>{PROJECT_CONFIG.name}</strong>.
+            </p>
+
+            <div className="mx-auto mt-7 max-w-md rounded-2xl bg-[#F0F6FD] px-6 py-5">
+              <p className="text-[16px] font-semibold uppercase tracking-wide text-[#3B5275]">
+                Número do seu protocolo
+              </p>
+              <p
+                data-testid="protocolo-gerado"
+                className="mt-1 font-mono text-[28px] sm:text-[32px] font-bold tracking-tight text-[#0B4F9E] tabular-nums"
+              >
+                {protocolo}
+              </p>
+              <p className="mt-2 text-[16px] text-[#3B5275]">
+                Guarde ou anote este número caso precise confirmar sua inscrição.
+              </p>
+            </div>
+
+            {isDemo && (
+              <p className="mx-auto mt-5 max-w-lg text-[16px] text-[#3B5275]">
+                Envio realizado no <strong>Modo Demonstração</strong>. Ao implantar este arquivo no{' '}
+                <strong>HtmlService</strong> do Google Apps Script, os envios serão gravados
+                automaticamente na planilha e no Drive.
+              </p>
+            )}
+
+            <div className="mt-8">
+              <button
+                type="button"
+                onClick={onStartNew}
+                className="inline-flex min-h-[58px] w-full max-w-md items-center justify-center gap-3 rounded-xl bg-[#0B4F9E] px-6 py-4 text-[20px] font-bold text-white shadow-sm transition-colors hover:bg-[#083872] active:scale-[0.99]"
+              >
+                <Icon.UserPlus className="h-6 w-6 shrink-0" />
+                <span>Fazer novo cadastro</span>
+              </button>
+            </div>
+          </section>
+        );
+      }
+
+      function AdminConfigModal({
+        isOpen,
+        isNativeHtmlService,
+        currentUrl,
+        onSaveUrl,
+        onClose,
+      }) {
+        const [urlInput, setUrlInput] = useState(currentUrl);
+        const [urlError, setUrlError] = useState('');
+        const [savedNotice, setSavedNotice] = useState(false);
+        const [copiedCode, setCopiedCode] = useState(false);
+
+        const codigoGs = useMemo(() => getCodigoGsTemplate(), []);
+
+        useEffect(() => {
+          if (isOpen) {
+            setUrlInput(currentUrl);
+            setUrlError('');
+            setSavedNotice(false);
+          }
+        }, [isOpen, currentUrl]);
+
+        useEffect(() => {
+          if (!isOpen) return;
+          const handleKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+          };
+          window.addEventListener('keydown', handleKeyDown);
+          return () => window.removeEventListener('keydown', handleKeyDown);
+        }, [isOpen, onClose]);
+
+        if (!isOpen) return null;
+
+        const handleSave = (event) => {
+          event.preventDefault();
+          const trimmed = urlInput.trim();
+          if (trimmed && !isValidAppsScriptUrl(trimmed)) {
+            setUrlError(
+              'Digite um endereço válido começando com https:// (gerado pelo Google Apps Script).'
+            );
+            return;
+          }
+          setUrlError('');
+          onSaveUrl(trimmed);
+          setSavedNotice(true);
+          window.setTimeout(() => setSavedNotice(false), 3000);
+        };
+
+        const handleCopyCode = async () => {
+          try {
+            await navigator.clipboard.writeText(codigoGs);
+            setCopiedCode(true);
+            window.setTimeout(() => setCopiedCode(false), 2500);
+          } catch {
+            const textarea = document.createElement('textarea');
+            textarea.value = codigoGs;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            setCopiedCode(true);
+            window.setTimeout(() => setCopiedCode(false), 2500);
+          }
+        };
+
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center bg-[#091526]/60 p-0 backdrop-blur-xs sm:items-center sm:p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="config-planilha-titulo"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) onClose();
+            }}
+          >
+            <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-3xl sm:p-8">
+              <div className="flex items-start justify-between gap-4 border-b border-[#E3ECF7] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EAF2FC] text-[#0B4F9E]">
+                    <Icon.Settings className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h2
+                      id="config-planilha-titulo"
+                      className="text-[22px] font-bold leading-tight text-[#10203A]"
+                    >
+                      Configuração da Planilha e Drive
+                    </h2>
+                    <p className="mt-0.5 text-[16px] text-[#3B5275]">
+                      Área da coordenação para publicar o formulário no Google Apps Script
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Fechar configuração"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#CBD9EC] text-[#1E3A63] transition-colors hover:bg-[#F0F6FD]"
+                >
+                  <Icon.X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {isNativeHtmlService ? (
+                <div className="mt-6 flex items-start gap-3 rounded-2xl bg-[#F0FDF4] p-4 text-[17px] text-[#166534]">
+                  <Icon.CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0" />
+                  <span>
+                    <strong>Conectado pelo HtmlService:</strong> esta página já está rodando
+                    diretamente dentro do Google Apps Script e salvando na Planilha e no Drive.
+                  </span>
+                </div>
+              ) : (
+                <form onSubmit={handleSave} className="mt-6 space-y-4">
+                  <div>
+                    <label
+                      htmlFor="apps-script-url-input"
+                      className="block text-[18px] font-semibold text-[#10203A]"
+                    >
+                      Endereço (URL) do App da Web do Google Apps Script (opcional)
+                    </label>
+                    <p className="mt-1 text-[15px] text-[#3B5275]">
+                      Quando hospedar este <code className="font-mono text-[14px]">index.html</code>{' '}
+                      dentro do próprio Apps Script (via <code className="font-mono text-[14px]">HtmlService</code>),
+                      não precisa preencher URL alguma. Se estiver abrindo de fora, cole a URL{' '}
+                      <code className="rounded bg-[#EAF2FC] px-1.5 py-0.5 font-mono text-[14px] text-[#083872]">
+                        /exec
+                      </code>{' '}
+                      abaixo:
+                    </p>
+                    <input
+                      id="apps-script-url-input"
+                      type="url"
+                      value={urlInput}
+                      onChange={(e) => {
+                        setUrlInput(e.target.value);
+                        setUrlError('');
+                      }}
+                      placeholder="https://script.google.com/macros/s/.../exec"
+                      className="mt-2 w-full min-h-[52px] rounded-xl border-2 border-[#BCCCE0] bg-white px-4 py-2.5 font-mono text-[15px] text-[#10203A] placeholder:text-[#788CA8] focus:border-[#0B4F9E] focus:outline-none"
+                    />
+                    {urlError && (
+                      <p role="alert" className="mt-2 text-[16px] font-medium text-[#B91C1C]">
+                        {urlError}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="submit"
+                      className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-[#0B4F9E] px-5 py-2.5 text-[17px] font-bold text-white transition-colors hover:bg-[#083872]"
+                    >
+                      <Icon.Save className="h-5 w-5 shrink-0" />
+                      <span>Salvar endereço</span>
+                    </button>
+
+                    {currentUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUrlInput('');
+                          onSaveUrl('');
+                          setUrlError('');
+                        }}
+                        className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-xl border border-[#BCCCE0] bg-white px-4 py-2.5 text-[16px] font-semibold text-[#2C4366] transition-colors hover:bg-[#F0F6FD]"
+                      >
+                        <Icon.RotateCcw className="h-4 w-4 shrink-0" />
+                        <span>Voltar para Modo Demonstração</span>
+                      </button>
+                    )}
+
+                    {savedNotice && (
+                      <span className="inline-flex items-center gap-1.5 text-[16px] font-semibold text-[#166534]">
+                        <Icon.Check className="h-5 w-5 shrink-0" />
+                        <span>Configuração salva neste aparelho!</span>
+                      </span>
+                    )}
+                  </div>
+                </form>
+              )}
+
+              <div className="mt-8 border-t border-[#E3ECF7] pt-6">
+                <h3 className="text-[19px] font-bold text-[#10203A]">
+                  Passo a passo para hospedar na Planilha Google (HtmlService)
+                </h3>
+
+                <ol className="mt-3 list-decimal space-y-2.5 pl-5 text-[16px] leading-relaxed text-[#253A59]">
+                  <li>
+                    No <strong>Google Drive</strong>, crie uma pasta privada (ex.:{' '}
+                    <em>Documentos Participantes</em>) e copie o <strong>ID da pasta</strong> que
+                    aparece na URL depois de <code className="font-mono text-[14px]">/folders/</code>.
+                  </li>
+                  <li>
+                    Crie uma nova <strong>Planilha Google</strong> e acesse{' '}
+                    <strong>Extensões &gt; Apps Script</strong>.
+                  </li>
+                  <li>
+                    No arquivo <code className="font-mono text-[14px]">Código.gs</code>, cole o código
+                    abaixo e substitua{' '}
+                    <code className="font-mono text-[14px]">COLE_AQUI_O_ID_DA_PASTA_DO_DRIVE</code>{' '}
+                    pelo ID da sua pasta.
+                  </li>
+                  <li>
+                    No painel esquerdo do Apps Script, clique em <strong>+ &gt; HTML</strong>, dê o
+                    nome exatamente de <code className="font-mono text-[14px]">index</code> e cole
+                    o conteúdo completo deste arquivo <code className="font-mono text-[14px]">index.html</code>.
+                  </li>
+                  <li>
+                    Clique em <strong>Implantar &gt; Nova implantação &gt; App da Web</strong>, em{' '}
+                    <em>Executar como</em> deixe <strong>Eu</strong> e em <em>Quem pode acessar</em>{' '}
+                    escolha <strong>Qualquer pessoa</strong>.
+                  </li>
+                  <li>
+                    Autorize as permissões e compartilhe o link gerado diretamente com as
+                    participantes e voluntárias.
+                  </li>
+                </ol>
+
+                <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-[#C8D9EE] bg-[#F0F6FD] p-3.5 text-[15px] text-[#1D375C]">
+                  <Icon.ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#0B4F9E]" />
+                  <span>
+                    <strong>Privacidade (LGPD):</strong> as fotos dos documentos são salvas na pasta
+                    privada do Google Drive sem compartilhamento público. Somente quem tem acesso à
+                    pasta consegue visualizar os arquivos.
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h4 className="text-[17px] font-bold text-[#10203A]">
+                    Código completo: Codigo.gs
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border-2 border-[#0B4F9E] bg-white px-4 py-2 text-[16px] font-bold text-[#0B4F9E] transition-colors hover:bg-[#EAF2FC]"
+                  >
+                    {copiedCode ? (
+                      <React.Fragment>
+                        <Icon.Check className="h-5 w-5 shrink-0 text-[#166534]" />
+                        <span className="text-[#166534]">Código copiado!</span>
+                      </React.Fragment>
+                    ) : (
+                      <React.Fragment>
+                        <Icon.Copy className="h-5 w-5 shrink-0" />
+                        <span>Copiar código Codigo.gs</span>
+                      </React.Fragment>
+                    )}
+                  </button>
+                </div>
+
+                <pre className="mt-3 max-h-[280px] overflow-auto rounded-2xl border border-[#BCCCE0] bg-[#0F1B2D] p-4 font-mono text-[13px] leading-relaxed text-[#EBF2FA]">
+                  <code>{codigoGs}</code>
+                </pre>
+              </div>
+
+              <div className="mt-6 flex items-center justify-between gap-4 border-t border-[#E3ECF7] pt-5">
+                <a
+                  href="https://script.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] font-semibold text-[#0B4F9E] underline underline-offset-4 hover:text-[#083872]"
+                >
+                  <span>Abrir Google Apps Script</span>
+                  <Icon.ExternalLink className="h-4 w-4 shrink-0" />
+                </a>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="min-h-[48px] rounded-xl bg-[#EAF2FC] px-6 py-2.5 text-[17px] font-bold text-[#0A2E5C] transition-colors hover:bg-[#D6E6FA]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // =========================================================================
+      // APLICAÇÃO PRINCIPAL
+      // =========================================================================
+      function loadInitialFormState() {
+        try {
+          const raw = window.localStorage.getItem(STORAGE_KEYS.draft);
+          if (!raw) return EMPTY_FORM_STATE;
+          const parsed = JSON.parse(raw);
+          return {
+            ...EMPTY_FORM_STATE,
+            nome: typeof parsed.nome === 'string' ? parsed.nome : '',
+            telefone: typeof parsed.telefone === 'string' ? parsed.telefone : '',
+            dataNascimento: typeof parsed.dataNascimento === 'string' ? parsed.dataNascimento : '',
+            cep: typeof parsed.cep === 'string' ? parsed.cep : '',
+            rua: typeof parsed.rua === 'string' ? parsed.rua : '',
+            numero: typeof parsed.numero === 'string' ? parsed.numero : '',
+            complemento: typeof parsed.complemento === 'string' ? parsed.complemento : '',
+            bairro: typeof parsed.bairro === 'string' ? parsed.bairro : '',
+            cidade: typeof parsed.cidade === 'string' ? parsed.cidade : '',
+            uf: typeof parsed.uf === 'string' ? parsed.uf : '',
+            tamanhoCamisa: typeof parsed.tamanhoCamisa === 'string' ? parsed.tamanhoCamisa : '',
+            consentimentoLgpd: Boolean(parsed.consentimentoLgpd),
+            fotoFrenteBase64: '',
+            fotoVersoBase64: '',
+          };
+        } catch {
+          return EMPTY_FORM_STATE;
+        }
+      }
+
+      function loadInitialAppsScriptUrl() {
+        try {
+          const stored = window.localStorage.getItem(STORAGE_KEYS.scriptUrl);
+          if (stored && stored.trim()) return stored.trim();
+        } catch {
+          // Ignora indisponibilidade de storage
+        }
+        return APPS_SCRIPT_URL.trim();
+      }
+
+      function App() {
+        const [formState, setFormState] = useState(loadInitialFormState);
+        const [errors, setErrors] = useState({});
+        const [submitError, setSubmitError] = useState('');
+        const [isSubmitting, setIsSubmitting] = useState(false);
+
+        const [cepStatus, setCepStatus] = useState('idle');
+        const [cepMessage, setCepMessage] = useState('');
+        const lastFetchedCepRef = useRef('');
+
+        const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+        const [isConfigOpen, setIsConfigOpen] = useState(false);
+        const [appsScriptUrl, setAppsScriptUrl] = useState(loadInitialAppsScriptUrl);
+        const [successData, setSuccessData] = useState(null);
+
+        const isNativeHtmlService = hasGoogleScriptRun();
+        const isDemoMode = !isNativeHtmlService && !appsScriptUrl.trim();
+
+        useEffect(() => {
+          if (successData) return;
+          try {
+            const draft = extractDraftFields(formState);
+            window.localStorage.setItem(STORAGE_KEYS.draft, JSON.stringify(draft));
+          } catch {
+            // Ignora erro de storage
+          }
+        }, [formState, successData]);
+
+        const agePreview = useMemo(() => {
+          const result = calculateAge(formState.dataNascimento);
+          return result.valid && result.age !== null ? result.age : null;
+        }, [formState.dataNascimento]);
+
+        const clearFieldError = useCallback((field) => {
+          setErrors((prev) => {
+            if (!prev[field]) return prev;
+            const next = { ...prev };
+            delete next[field];
+            return next;
+          });
+          setSubmitError('');
+        }, []);
+
+        const handleFieldChange = useCallback(
+          (field, value) => {
+            setFormState((prev) => ({ ...prev, [field]: value }));
+            clearFieldError(field);
+          },
+          [clearFieldError]
+        );
+
+        const handleCepChange = async (rawValue) => {
+          const masked = maskCep(rawValue);
+          handleFieldChange('cep', masked);
+
+          const digits = unmaskDigits(masked);
+          if (digits.length < 8) {
+            lastFetchedCepRef.current = '';
+            setCepStatus('idle');
+            setCepMessage('');
+            return;
+          }
+
+          if (digits === lastFetchedCepRef.current) return;
+
+          lastFetchedCepRef.current = digits;
+          setCepStatus('loading');
+          setCepMessage('');
+
+          const result = await lookupCep(digits);
+
+          if (result.found && result.data) {
+            setCepStatus('found');
+            setCepMessage('Endereço encontrado! Confira abaixo e preencha o número.');
+            setFormState((prev) => ({
+              ...prev,
+              rua: result.data.rua || prev.rua,
+              bairro: result.data.bairro || prev.bairro,
+              cidade: result.data.cidade || prev.cidade,
+              uf: result.data.uf || prev.uf,
+            }));
+            setErrors((prev) => {
+              const next = { ...prev };
+              if (result.data.rua) delete next.rua;
+              if (result.data.bairro) delete next.bairro;
+              if (result.data.cidade) delete next.cidade;
+              if (result.data.uf) delete next.uf;
+              return next;
+            });
+          } else {
+            setCepStatus('not_found');
+            setCepMessage(
+              result.errorMessage ||
+                'CEP não encontrado. Você pode preencher o endereço abaixo manualmente.'
+            );
+          }
+        };
+
+        const scrollToFirstError = (errorMap) => {
+          const fieldOrder = [
+            'nome',
+            'telefone',
+            'dataNascimento',
+            'cep',
+            'rua',
+            'numero',
+            'bairro',
+            'cidade',
+            'uf',
+            'tamanhoCamisa',
+            'fotoFrenteBase64',
+            'consentimentoLgpd',
+          ];
+          const firstKey = fieldOrder.find((key) => Boolean(errorMap[key]));
+          if (!firstKey) return;
+          const target = document.querySelector('[data-field-id="' + firstKey + '"]');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        };
+
+        const handleSubmit = async (event) => {
+          event.preventDefault();
+          if (isSubmitting) return;
+
+          setSubmitError('');
+          const validation = validateRegistrationForm(formState);
+
+          if (!validation.isValid || validation.computedAge === null) {
+            setErrors(validation.errors);
+            setSubmitError('Por favor, confira os campos marcados em vermelho antes de enviar.');
+            scrollToFirstError(validation.errors);
+            return;
+          }
+
+          setIsSubmitting(true);
+          try {
+            const payload = buildSubmissionPayload(formState, validation.computedAge);
+            const response = await submitRegistration(payload, appsScriptUrl);
+
+            if (!response.ok || !response.protocolo) {
+              const errMsg = response.error || 'Não foi possível finalizar o cadastro.';
+              setSubmitError(errMsg);
+              if (errMsg.toLowerCase().indexOf('telefone') !== -1) {
+                setErrors((prev) => ({ ...prev, telefone: errMsg }));
+                scrollToFirstError({ telefone: errMsg });
+              }
+              return;
+            }
+
+            try {
+              window.localStorage.removeItem(STORAGE_KEYS.draft);
+            } catch {
+              // Ignora erro de storage
+            }
+
+            setSuccessData({
+              nome: payload.nome,
+              protocolo: response.protocolo,
+              isDemo: Boolean(response.isDemo),
+            });
+            window.scrollTo({ top: 0, behavior: 'auto' });
+          } finally {
+            setIsSubmitting(false);
+          }
+        };
+
+        const handleStartNew = () => {
+          setFormState(EMPTY_FORM_STATE);
+          setErrors({});
+          setSubmitError('');
+          setCepStatus('idle');
+          setCepMessage('');
+          lastFetchedCepRef.current = '';
+          setSuccessData(null);
+          try {
+            window.localStorage.removeItem(STORAGE_KEYS.draft);
+          } catch {
+            // Ignora erro de storage
+          }
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        };
+
+        const handleSaveConfigUrl = (newUrl) => {
+          setAppsScriptUrl(newUrl);
+          try {
+            if (newUrl) {
+              window.localStorage.setItem(STORAGE_KEYS.scriptUrl, newUrl);
+            } else {
+              window.localStorage.removeItem(STORAGE_KEYS.scriptUrl);
+            }
+          } catch {
+            // Ignora erro de storage
+          }
+        };
+
+        return (
+          <div className="min-h-screen flex flex-col bg-[#F4F7FB] text-[#10203A]">
+            <ProjectHeader
+              isDemoMode={isDemoMode}
+              onOpenConfig={() => setIsConfigOpen(true)}
+            />
+
+            <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-10 lg:px-8">
+              {successData ? (
+                <div className="mx-auto max-w-2xl">
+                  <SuccessScreen
+                    nome={successData.nome}
+                    protocolo={successData.protocolo}
+                    isDemo={successData.isDemo}
+                    onStartNew={handleStartNew}
+                  />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-[330px_1fr] lg:items-start">
+                  {/* Painel de acolhimento (desktop) */}
+                  <aside className="hidden rounded-3xl border border-[#D4E1F2] bg-white p-7 lg:sticky lg:top-6 lg:block">
+                    <h2 className="text-[22px] font-bold leading-snug text-[#10203A]">
+                      Boas-vindas!
+                    </h2>
+                    <p className="mt-2.5 text-[18px] leading-relaxed text-[#2C4366]">
+                      {PROJECT_CONFIG.welcomeText}
+                    </p>
+
+                    <div className="mt-6 space-y-4 border-t border-[#E3ECF7] pt-5">
+                      <p className="text-[17px] font-bold text-[#0A2E5C]">
+                        O que você vai precisar ter em mãos:
+                      </p>
+
+                      <ul className="space-y-3 text-[17px] leading-snug text-[#2C4366]">
+                        <li className="flex items-start gap-3">
+                          <Icon.FileCheck2 className="mt-0.5 h-5 w-5 shrink-0 text-[#0B4F9E]" />
+                          <span>Seu documento de identidade (RG ou CNH) para tirar foto.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <Icon.MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#0B4F9E]" />
+                          <span>O número do seu CEP ou endereço completo.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <Icon.ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#0B4F9E]" />
+                          <span>
+                            Seus dados ficam protegidos e salvos apenas para uso do {PROJECT_CONFIG.name}.
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                  </aside>
+
+                  {/* Formulário principal */}
+                  <form
+                    onSubmit={handleSubmit}
+                    noValidate
+                    className="rounded-3xl border border-[#D4E1F2] bg-white p-5 sm:p-9"
+                  >
+                    <p className="mb-6 border-b border-[#E3ECF7] pb-4 text-[18px] leading-relaxed text-[#2C4366] lg:hidden">
+                      {PROJECT_CONFIG.welcomeText} Tenha em mãos seu{' '}
+                      <strong className="text-[#10203A]">RG ou CNH</strong> e o{' '}
+                      <strong className="text-[#10203A]">CEP</strong>.
+                    </p>
+
+                    {/* Seção 1: Dados Pessoais */}
+                    <section aria-labelledby="secao-dados-pessoais" className="space-y-6">
+                      <div>
+                        <h2
+                          id="secao-dados-pessoais"
+                          className="text-[24px] font-extrabold text-[#10203A]"
+                        >
+                          1. Seus dados pessoais
+                        </h2>
+                        <p className="mt-1 text-[17px] text-[#3B5275]">
+                          Escreva seus dados com atenção.
+                        </p>
+                      </div>
+
+                      <FormField id="nome" label="Nome completo" error={errors.nome}>
+                        <input
+                          id="nome"
+                          name="nome"
+                          type="text"
+                          autoComplete="name"
+                          value={formState.nome}
+                          onChange={(e) => handleFieldChange('nome', e.target.value)}
+                          placeholder="Ex.: Maria das Graças Silva"
+                          aria-invalid={Boolean(errors.nome)}
+                          aria-describedby={errors.nome ? 'nome-error' : undefined}
+                          className={getInputClassName(Boolean(errors.nome))}
+                        />
+                      </FormField>
+
+                      <FormField
+                        id="telefone"
+                        label="Telefone / WhatsApp"
+                        hint="Digite o DDD e o número. Se não tiver WhatsApp, pode colocar um telefone para recados."
+                        error={errors.telefone}
+                      >
+                        <input
+                          id="telefone"
+                          name="telefone"
+                          type="tel"
+                          inputMode="numeric"
+                          autoComplete="tel"
+                          value={formState.telefone}
+                          onChange={(e) => handleFieldChange('telefone', maskPhone(e.target.value))}
+                          placeholder="(11) 99999-9999"
+                          aria-invalid={Boolean(errors.telefone)}
+                          aria-describedby={errors.telefone ? 'telefone-error' : 'telefone-hint'}
+                          className={getInputClassName(Boolean(errors.telefone))}
+                        />
+                      </FormField>
+
+                      <FormField
+                        id="dataNascimento"
+                        label="Data de nascimento"
+                        hint="Digite dia, mês e ano com 4 números (exemplo: 15/05/1958)."
+                        error={errors.dataNascimento}
+                      >
+                        <div className="flex flex-wrap items-center gap-4">
+                          <input
+                            id="dataNascimento"
+                            name="dataNascimento"
+                            type="text"
+                            inputMode="numeric"
+                            autoComplete="bday"
+                            value={formState.dataNascimento}
+                            onChange={(e) =>
+                              handleFieldChange('dataNascimento', maskBirthDate(e.target.value))
+                            }
+                            placeholder="DD/MM/AAAA"
+                            maxLength={10}
+                            aria-invalid={Boolean(errors.dataNascimento)}
+                            aria-describedby={
+                              errors.dataNascimento
+                                ? 'dataNascimento-error'
+                                : 'dataNascimento-hint'
+                            }
+                            className={getInputClassName(
+                              Boolean(errors.dataNascimento),
+                              'max-w-[220px] tabular-nums'
+                            )}
+                          />
+
+                          {agePreview !== null && (
+                            <span
+                              data-testid="idade-calculada"
+                              className="text-[20px] font-bold text-[#0B4F9E] tabular-nums"
+                            >
+                              {agePreview} {agePreview === 1 ? 'ano' : 'anos'}
+                            </span>
+                          )}
+                        </div>
+                      </FormField>
+                    </section>
+
+                    {/* Seção 2: Endereço */}
+                    <section
+                      aria-labelledby="secao-endereco"
+                      className="mt-10 space-y-6 border-t border-[#E3ECF7] pt-8"
+                    >
+                      <div>
+                        <h2 id="secao-endereco" className="text-[24px] font-extrabold text-[#10203A]">
+                          2. Seu endereço
+                        </h2>
+                        <p className="mt-1 text-[17px] text-[#3B5275]">
+                          Ao digitar o CEP, tentaremos preencher a rua e o bairro automaticamente.
+                        </p>
+                      </div>
+
+                      <FormField id="cep" label="CEP" error={errors.cep}>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <input
+                            id="cep"
+                            name="cep"
+                            type="text"
+                            inputMode="numeric"
+                            autoComplete="postal-code"
+                            value={formState.cep}
+                            onChange={(e) => handleCepChange(e.target.value)}
+                            placeholder="00000-000"
+                            maxLength={9}
+                            aria-invalid={Boolean(errors.cep)}
+                            aria-describedby={errors.cep ? 'cep-error' : undefined}
+                            className={getInputClassName(
+                              Boolean(errors.cep),
+                              'max-w-[220px] tabular-nums'
+                            )}
+                          />
+
+                          {cepStatus === 'loading' && (
+                            <span className="inline-flex items-center gap-2 text-[17px] font-medium text-[#0B4F9E]">
+                              <Icon.Loader2 className="h-5 w-5 animate-spin" />
+                              <span>Buscando endereço...</span>
+                            </span>
+                          )}
+                        </div>
+
+                        {cepMessage && (
+                          <p
+                            className={
+                              'pt-1 text-[16px] font-medium ' +
+                              (cepStatus === 'found' ? 'text-[#166534]' : 'text-[#6B4E00]')
+                            }
+                          >
+                            {cepMessage}
+                          </p>
+                        )}
+                      </FormField>
+
+                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
+                        <div className="sm:col-span-3">
+                          <FormField id="rua" label="Rua / Logradouro" error={errors.rua}>
+                            <input
+                              id="rua"
+                              name="rua"
+                              type="text"
+                              autoComplete="street-address"
+                              value={formState.rua}
+                              onChange={(e) => handleFieldChange('rua', e.target.value)}
+                              placeholder="Ex.: Rua das Flores"
+                              aria-invalid={Boolean(errors.rua)}
+                              aria-describedby={errors.rua ? 'rua-error' : undefined}
+                              className={getInputClassName(Boolean(errors.rua))}
+                            />
+                          </FormField>
+                        </div>
+
+                        <div className="sm:col-span-1">
+                          <FormField id="numero" label="Número" error={errors.numero}>
+                            <input
+                              id="numero"
+                              name="numero"
+                              type="text"
+                              value={formState.numero}
+                              onChange={(e) => handleFieldChange('numero', e.target.value)}
+                              placeholder="Ex.: 123"
+                              aria-invalid={Boolean(errors.numero)}
+                              aria-describedby={errors.numero ? 'numero-error' : undefined}
+                              className={getInputClassName(Boolean(errors.numero))}
+                            />
+                          </FormField>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <FormField
+                          id="complemento"
+                          label="Complemento"
+                          optional
+                          error={errors.complemento}
+                        >
+                          <input
+                            id="complemento"
+                            name="complemento"
+                            type="text"
+                            value={formState.complemento}
+                            onChange={(e) => handleFieldChange('complemento', e.target.value)}
+                            placeholder="Ex.: Casa 2, Apto 14, Fundos"
+                            className={getInputClassName(false)}
+                          />
+                        </FormField>
+
+                        <FormField id="bairro" label="Bairro" error={errors.bairro}>
+                          <input
+                            id="bairro"
+                            name="bairro"
+                            type="text"
+                            value={formState.bairro}
+                            onChange={(e) => handleFieldChange('bairro', e.target.value)}
+                            placeholder="Ex.: Centro"
+                            aria-invalid={Boolean(errors.bairro)}
+                            aria-describedby={errors.bairro ? 'bairro-error' : undefined}
+                            className={getInputClassName(Boolean(errors.bairro))}
+                          />
+                        </FormField>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-4">
+                        <div className="sm:col-span-3">
+                          <FormField id="cidade" label="Cidade" error={errors.cidade}>
+                            <input
+                              id="cidade"
+                              name="cidade"
+                              type="text"
+                              autoComplete="address-level2"
+                              value={formState.cidade}
+                              onChange={(e) => handleFieldChange('cidade', e.target.value)}
+                              placeholder="Ex.: São Paulo"
+                              aria-invalid={Boolean(errors.cidade)}
+                              aria-describedby={errors.cidade ? 'cidade-error' : undefined}
+                              className={getInputClassName(Boolean(errors.cidade))}
+                            />
+                          </FormField>
+                        </div>
+
+                        <div className="sm:col-span-1">
+                          <FormField id="uf" label="UF (Estado)" error={errors.uf}>
+                            <input
+                              id="uf"
+                              name="uf"
+                              type="text"
+                              autoComplete="address-level1"
+                              maxLength={2}
+                              value={formState.uf}
+                              onChange={(e) =>
+                                handleFieldChange(
+                                  'uf',
+                                  e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase()
+                                )
+                              }
+                              placeholder="SP"
+                              aria-invalid={Boolean(errors.uf)}
+                              aria-describedby={errors.uf ? 'uf-error' : undefined}
+                              className={getInputClassName(Boolean(errors.uf), 'uppercase')}
+                            />
+                          </FormField>
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* Seção 3: Camisa */}
+                    <section
+                      aria-labelledby="secao-camisa"
+                      className="mt-10 space-y-5 border-t border-[#E3ECF7] pt-8"
+                    >
+                      <h2 id="secao-camisa" className="text-[24px] font-extrabold text-[#10203A]">
+                        3. Camisa do projeto
+                      </h2>
+
+                      <ShirtSizeSelector
+                        value={formState.tamanhoCamisa}
+                        error={errors.tamanhoCamisa}
+                        onChange={(size) => handleFieldChange('tamanhoCamisa', size)}
+                        onOpenSizeChart={() => setIsSizeChartOpen(true)}
+                      />
+                    </section>
+
+                    {/* Seção 4: Foto do Documento */}
+                    <section
+                      aria-labelledby="secao-documento"
+                      className="mt-10 space-y-5 border-t border-[#E3ECF7] pt-8"
+                    >
+                      <div>
+                        <h2 id="secao-documento" className="text-[24px] font-extrabold text-[#10203A]">
+                          4. Foto da identidade (RG ou CNH)
+                        </h2>
+                        <p className="mt-1 text-[17px] text-[#3B5275]">
+                          Procure um lugar claro para que o nome e a foto do documento fiquem bem legíveis.
+                        </p>
+                      </div>
+
+                      <div className="space-y-5">
+                        <PhotoCaptureField
+                          id="fotoFrenteBase64"
+                          title="Frente do documento"
+                          description="Tire uma foto da frente da sua identidade (RG ou CNH)."
+                          required
+                          value={formState.fotoFrenteBase64}
+                          error={errors.fotoFrenteBase64}
+                          onChange={(base64) => handleFieldChange('fotoFrenteBase64', base64)}
+                        />
+
+                        <PhotoCaptureField
+                          id="fotoVersoBase64"
+                          title="Verso do documento"
+                          description="Só precisa enviar se os dados estiverem no verso (caso a foto da frente já mostre o documento inteiro aberto, não precisa)."
+                          required={false}
+                          value={formState.fotoVersoBase64}
+                          error={errors.fotoVersoBase64}
+                          onChange={(base64) => handleFieldChange('fotoVersoBase64', base64)}
+                        />
+                      </div>
+                    </section>
+
+                    {/* Seção 5: Consentimento LGPD */}
+                    <section
+                      aria-labelledby="secao-lgpd"
+                      className="mt-10 space-y-4 border-t border-[#E3ECF7] pt-8"
+                    >
+                      <h2 id="secao-lgpd" className="text-[24px] font-extrabold text-[#10203A]">
+                        5. Autorização de uso dos dados
+                      </h2>
+
+                      <div data-field-id="consentimentoLgpd" className="space-y-2">
+                        <label
+                          htmlFor="consentimentoLgpd"
+                          className={
+                            'flex min-h-[60px] cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition-colors ' +
+                            (errors.consentimentoLgpd
+                              ? 'border-[#B91C1C] bg-[#FFF8F8]'
+                              : formState.consentimentoLgpd
+                                ? 'border-[#0B4F9E] bg-[#F0F6FD]'
+                                : 'border-[#BCCCE0] bg-[#F4F7FB] hover:border-[#7B99C0]')
+                          }
+                        >
+                          <span className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center">
+                            <input
+                              id="consentimentoLgpd"
+                              name="consentimentoLgpd"
+                              type="checkbox"
+                              checked={formState.consentimentoLgpd}
+                              onChange={(e) =>
+                                handleFieldChange('consentimentoLgpd', e.target.checked)
+                              }
+                              aria-invalid={Boolean(errors.consentimentoLgpd)}
+                              className="peer h-8 w-8 cursor-pointer appearance-none rounded-lg border-2 border-[#0B4F9E] bg-white checked:bg-[#0B4F9E] focus:outline-none"
+                            />
+                            <Icon.Check
+                              className="pointer-events-none absolute h-5 w-5 text-white opacity-0 peer-checked:opacity-100"
+                              strokeWidth={3}
+                            />
+                          </span>
+
+                          <span className="text-[18px] leading-relaxed text-[#10203A]">
+                            {LGPD_CONSENT_TEXT}
+                          </span>
+                        </label>
+
+                        {errors.consentimentoLgpd && (
+                          <p
+                            role="alert"
+                            className="flex items-start gap-2 pt-1 text-[17px] font-medium leading-snug text-[#B91C1C]"
+                          >
+                            <Icon.AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                            <span>{errors.consentimentoLgpd}</span>
+                          </p>
+                        )}
+                      </div>
+                    </section>
+
+                    {/* Botão de Envio */}
+                    <div className="mt-10 space-y-4 border-t border-[#E3ECF7] pt-8">
+                      {submitError && (
+                        <div
+                          role="alert"
+                          className="flex items-start gap-3 rounded-2xl border-2 border-[#B91C1C] bg-[#FFF5F5] p-4 text-[18px] font-semibold text-[#991B1B]"
+                        >
+                          <Icon.AlertCircle className="mt-0.5 h-6 w-6 shrink-0" />
+                          <span>{submitError}</span>
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex min-h-[62px] w-full items-center justify-center gap-3 rounded-2xl bg-[#0B4F9E] px-6 py-4 text-[20px] font-extrabold tracking-wide text-white shadow-sm transition-colors hover:bg-[#083872] disabled:cursor-not-allowed disabled:bg-[#6E92BE] active:scale-[0.99]"
+                      >
+                        {isSubmitting ? (
+                          <React.Fragment>
+                            <Icon.Loader2 className="h-6 w-6 shrink-0 animate-spin" />
+                            <span>Enviando cadastro e salvando fotos, aguarde...</span>
+                          </React.Fragment>
+                        ) : (
+                          <React.Fragment>
+                            <Icon.Send className="h-6 w-6 shrink-0" />
+                            <span>ENVIAR CADASTRO</span>
+                          </React.Fragment>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </main>
+
+            <footer className="border-t border-[#D7E3F2] bg-white/80 px-4 py-6 text-[#3B5275] sm:px-6 lg:px-8">
+              <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-[16px]">
+                <p>{PROJECT_CONFIG.name} · Cadastro das Participantes</p>
+
+                <button
+                  type="button"
+                  onClick={() => setIsConfigOpen(true)}
+                  aria-label="Configuração da Planilha e Drive"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-[15px] font-medium text-[#3B5275] transition-colors hover:bg-[#EAF2FC] hover:text-[#10203A]"
+                >
+                  <Icon.Settings className="h-5 w-5 shrink-0" />
+                  <span>Configuração da Planilha e Drive</span>
+                </button>
+              </div>
+            </footer>
+
+            <SizeChartModal
+              isOpen={isSizeChartOpen}
+              onClose={() => setIsSizeChartOpen(false)}
+            />
+
+            <AdminConfigModal
+              isOpen={isConfigOpen}
+              isNativeHtmlService={isNativeHtmlService}
+              currentUrl={appsScriptUrl}
+              onSaveUrl={handleSaveConfigUrl}
+              onClose={() => setIsConfigOpen(false)}
+            />
+          </div>
+        );
+      }
+
+      const rootEl = document.getElementById('root');
+      if (ReactDOM.createRoot) {
+        ReactDOM.createRoot(rootEl).render(<App />);
+      } else {
+        ReactDOM.render(<App />, rootEl);
+      }
+    </script>
+  </body>
+</html>
