@@ -104,7 +104,7 @@
 
       // Opcional: quando hospedado fora do HtmlService do Google Apps Script,
       // você pode colar aqui a URL "/exec" do Web App do Apps Script.
-      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCFwS7gcIfHK6qgVBD_-mRJ0Ym1BYS0cthp6MiR3K6PB3b9F7GCsnpJ5SayRKliF_M/exec';
+      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyxo0QvivCTafvj_DUP0V1FYJSD9poK-2DCOcAajh7sCebBDm5ULMeO47nQvU9eZZnP/exec';
 
       const STORAGE_KEYS = {
         draft: 'projeto_saad_cadastro_rascunho_v1',
@@ -736,158 +736,6 @@
       }
 
       // =========================================================================
-      // TEMPLATE DO CÓDIGO Codigo.gs PARA COPIAR
-      // =========================================================================
-      function getCodigoGsTemplate() {
-        return [
-          '// ============================================================================',
-          '// GOOGLE APPS SCRIPT — CADASTRO DAS PARTICIPANTES (HTMLSERVICE + PLANILHA + DRIVE)',
-          '// ============================================================================',
-          'const FOLDER_ID = "COLE_AQUI_O_ID_DA_PASTA_DO_DRIVE";',
-          '',
-          'const PAGE_TITLE = "Cadastro de Participantes — PROJETO SAAD";',
-          'const SHEET_CADASTROS = "Cadastros";',
-          'const SHEET_RESUMO = "Resumo Camisas";',
-          '',
-          'const CABECALHO_CADASTROS = [',
-          '  "Protocolo", "Data/Hora", "Nome Completo", "Telefone", "Data de Nascimento",',
-          '  "Idade", "Tamanho da Camisa", "CEP", "Rua", "Número", "Complemento",',
-          '  "Bairro", "Cidade", "UF", "Link Foto Frente", "Link Foto Verso", "Consentimento LGPD"',
-          '];',
-          '',
-          'function doGet() {',
-          '  return HtmlService.createHtmlOutputFromFile("index")',
-          '    .setTitle(PAGE_TITLE)',
-          '    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)',
-          '    .addMetaTag("viewport", "width=device-width, initial-scale=1");',
-          '}',
-          '',
-          'function salvarCadastro(dados) {',
-          '  const lock = LockService.getScriptLock();',
-          '  try {',
-          '    lock.waitLock(30000);',
-          '    if (!dados || typeof dados !== "object") {',
-          '      return { ok: false, error: "Nenhum dado foi recebido no envio." };',
-          '    }',
-          '    const ss = SpreadsheetApp.getActiveSpreadsheet();',
-          '    const abaCadastros = garantirAbaCadastros(ss);',
-          '    garantirAbaResumoCamisas(ss);',
-          '',
-          '    const telefoneNovoLimpo = String(dados.telefone || "").replace(/\\D/g, "");',
-          '    if (!telefoneNovoLimpo) return { ok: false, error: "Telefone não informado." };',
-          '    if (telefoneJaCadastrado(abaCadastros, telefoneNovoLimpo)) {',
-          '      return { ok: false, error: "Já existe um cadastro com este telefone." };',
-          '    }',
-          '    if (!FOLDER_ID || FOLDER_ID === "COLE_AQUI_O_ID_DA_PASTA_DO_DRIVE") {',
-          '      return { ok: false, error: "O ID da pasta do Google Drive ainda não foi configurado." };',
-          '    }',
-          '',
-          '    const protocoloGerado = gerarProximoProtocolo(abaCadastros);',
-          '    const nomeParaArquivo = sanitizarNomeArquivo(dados.nome || "PARTICIPANTE");',
-          '    const pastaDrive = DriveApp.getFolderById(FOLDER_ID);',
-          '',
-          '    let linkFotoFrente = "";',
-          '    if (dados.fotoFrenteBase64) {',
-          '      linkFotoFrente = salvarFotoNoDrive(pastaDrive, dados.fotoFrenteBase64, protocoloGerado + "_" + nomeParaArquivo + "_FRENTE.jpg");',
-          '    }',
-          '    let linkFotoVerso = "";',
-          '    if (dados.fotoVersoBase64) {',
-          '      linkFotoVerso = salvarFotoNoDrive(pastaDrive, dados.fotoVersoBase64, protocoloGerado + "_" + nomeParaArquivo + "_VERSO.jpg");',
-          '    }',
-          '',
-          '    const dataHoraFormatada = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "America/Sao_Paulo", "dd/MM/yyyy HH:mm:ss");',
-          '    abaCadastros.appendRow([',
-          '      protocoloGerado, dataHoraFormatada, String(dados.nome || "").trim(), String(dados.telefone || "").trim(),',
-          '      String(dados.dataNascimento || "").trim(), Number(dados.idade || 0), String(dados.tamanhoCamisa || "").trim(),',
-          '      String(dados.cep || "").trim(), String(dados.rua || "").trim(), String(dados.numero || "").trim(),',
-          '      String(dados.complemento || "").trim(), String(dados.bairro || "").trim(), String(dados.cidade || "").trim(),',
-          '      String(dados.uf || "").trim().toUpperCase(), linkFotoFrente, linkFotoVerso,',
-          '      dados.consentimentoLgpd ? "Sim (Autorizado)" : "Não"',
-          '    ]);',
-          '    return { ok: true, protocolo: protocoloGerado };',
-          '  } catch (erro) {',
-          '    return { ok: false, error: "Erro ao salvar cadastro: " + (erro && erro.message ? erro.message : String(erro)) };',
-          '  } finally {',
-          '    lock.releaseLock();',
-          '  }',
-          '}',
-          '',
-          'function doPost(e) {',
-          '  try {',
-          '    if (!e || !e.postData || !e.postData.contents) {',
-          '      return criarRespostaJson({ ok: false, error: "Nenhum dado foi recebido no envio." });',
-          '    }',
-          '    return criarRespostaJson(salvarCadastro(JSON.parse(e.postData.contents)));',
-          '  } catch (erro) {',
-          '    return criarRespostaJson({ ok: false, error: "Erro ao processar: " + String(erro) });',
-          '  }',
-          '}',
-          '',
-          'function garantirAbaCadastros(ss) {',
-          '  let aba = ss.getSheetByName(SHEET_CADASTROS);',
-          '  if (!aba) {',
-          '    aba = ss.insertSheet(SHEET_CADASTROS);',
-          '    aba.appendRow(CABECALHO_CADASTROS);',
-          '    aba.getRange(1, 1, 1, CABECALHO_CADASTROS.length).setFontWeight("bold").setBackground("#0B4F9E").setFontColor("#FFFFFF").setHorizontalAlignment("center");',
-          '    aba.setFrozenRows(1);',
-          '    aba.autoResizeColumns(1, CABECALHO_CADASTROS.length);',
-          '  }',
-          '  return aba;',
-          '}',
-          '',
-          'function garantirAbaResumoCamisas(ss) {',
-          '  let aba = ss.getSheetByName(SHEET_RESUMO);',
-          '  if (!aba) {',
-          '    aba = ss.insertSheet(SHEET_RESUMO);',
-          '    aba.getRange("A1:B1").setValues([["Tamanho da Camisa", "Quantidade"]]).setFontWeight("bold").setBackground("#0B4F9E").setFontColor("#FFFFFF");',
-          '    const tamanhos = ["PP", "P", "M", "G", "GG", "XG", "XGG"];',
-          '    for (let i = 0; i < tamanhos.length; i++) {',
-          '      const linha = i + 2;',
-          '      aba.getRange(linha, 1).setValue(tamanhos[i]);',
-          '      aba.getRange(linha, 2).setFormula("=COUNTIF(" + SHEET_CADASTROS + "!G2:G, A" + linha + ")");',
-          '    }',
-          '    const linhaTotal = tamanhos.length + 2;',
-          '    aba.getRange(linhaTotal, 1).setValue("Total Geral").setFontWeight("bold");',
-          '    aba.getRange(linhaTotal, 2).setFormula("=SUM(B2:B" + (linhaTotal - 1) + ")").setFontWeight("bold");',
-          '    aba.setFrozenRows(1);',
-          '    aba.autoResizeColumns(1, 2);',
-          '  }',
-          '  return aba;',
-          '}',
-          '',
-          'function telefoneJaCadastrado(abaCadastros, telefoneNovoLimpo) {',
-          '  const ultimaLinha = abaCadastros.getLastRow();',
-          '  if (ultimaLinha <= 1) return false;',
-          '  const valores = abaCadastros.getRange(2, 4, ultimaLinha - 1, 1).getValues();',
-          '  for (let i = 0; i < valores.length; i++) {',
-          '    if (String(valores[i][0] || "").replace(/\\D/g, "") === telefoneNovoLimpo) return true;',
-          '  }',
-          '  return false;',
-          '}',
-          '',
-          'function gerarProximoProtocolo(abaCadastros) {',
-          '  const ano = new Date().getFullYear();',
-          '  const seq = Math.max(1, abaCadastros.getLastRow());',
-          '  return "CAD-" + ano + "-" + ("0000" + seq).slice(-4);',
-          '}',
-          '',
-          'function salvarFotoNoDrive(pastaDrive, base64String, nomeArquivo) {',
-          '  const base64Limpo = String(base64String).replace(/^data:image\\/[a-zA-Z0-9.+-]+;base64,/, "");',
-          '  const blob = Utilities.newBlob(Utilities.base64Decode(base64Limpo), "image/jpeg", nomeArquivo);',
-          '  return pastaDrive.createFile(blob).getUrl();',
-          '}',
-          '',
-          'function sanitizarNomeArquivo(nome) {',
-          '  return String(nome).normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").trim().replace(/\\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "").toUpperCase();',
-          '}',
-          '',
-          'function criarRespostaJson(obj) {',
-          '  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);',
-          '}',
-        ].join('\n');
-      }
-
-      // =========================================================================
       // COMPONENTES DE INTERFACE
       // =========================================================================
       function getInputClassName(hasError, extraClassName = '') {
@@ -934,48 +782,24 @@
         );
       }
 
-      function ProjectHeader({ isDemoMode, onOpenConfig }) {
+      function ProjectHeader() {
         return (
-          <React.Fragment>
-            {isDemoMode && (
-              <div
-                role="region"
-                aria-label="Aviso de modo demonstração"
-                className="border-b border-[#C8D9EE] bg-[#EAF2FC] px-4 py-2.5 text-center"
-              >
-                <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[15px] text-[#173763]">
-                  <span>
-                    <strong>Modo Demonstração:</strong> os cadastros são simulados neste aparelho.
-                  </span>
-                  <button
-                    type="button"
-                    onClick={onOpenConfig}
-                    className="inline-flex min-h-[36px] items-center gap-1.5 font-bold text-[#0B4F9E] underline decoration-2 underline-offset-4 hover:text-[#083872]"
-                  >
-                    <Icon.Settings className="h-4 w-4 shrink-0" />
-                    <span>Configurar planilha</span>
-                  </button>
-                </div>
+          <header className="border-b border-[#D7E3F2] bg-white shadow-2xs">
+            <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:gap-6 sm:px-6 lg:px-8">
+              <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#D4AF37] bg-[#0B4F9E] shadow-xs sm:h-24 sm:w-32">
+                <ProjectLogo />
               </div>
-            )}
 
-            <header className="border-b border-[#D7E3F2] bg-white shadow-2xs">
-              <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:gap-6 sm:px-6 lg:px-8">
-                <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#D4AF37] bg-[#0B4F9E] shadow-xs sm:h-24 sm:w-32">
-                  <ProjectLogo />
-                </div>
-
-                <div className="min-w-0">
-                  <h1 className="text-[24px] font-extrabold leading-tight tracking-tight text-[#0A2E5C] sm:text-[32px]">
-                    {PROJECT_CONFIG.name}
-                  </h1>
-                  <p className="mt-1 text-[18px] font-semibold text-[#0B4F9E]">
-                    {PROJECT_CONFIG.subtitle}
-                  </p>
-                </div>
+              <div className="min-w-0">
+                <h1 className="text-[24px] font-extrabold leading-tight tracking-tight text-[#0A2E5C] sm:text-[32px]">
+                  {PROJECT_CONFIG.name}
+                </h1>
+                <p className="mt-1 text-[18px] font-semibold text-[#0B4F9E]">
+                  {PROJECT_CONFIG.subtitle}
+                </p>
               </div>
-            </header>
-          </React.Fragment>
+            </div>
+          </header>
         );
       }
 
@@ -1365,288 +1189,6 @@
         );
       }
 
-      function AdminConfigModal({
-        isOpen,
-        isNativeHtmlService,
-        currentUrl,
-        onSaveUrl,
-        onClose,
-      }) {
-        const [urlInput, setUrlInput] = useState(currentUrl);
-        const [urlError, setUrlError] = useState('');
-        const [savedNotice, setSavedNotice] = useState(false);
-        const [copiedCode, setCopiedCode] = useState(false);
-
-        const codigoGs = useMemo(() => getCodigoGsTemplate(), []);
-
-        useEffect(() => {
-          if (isOpen) {
-            setUrlInput(currentUrl);
-            setUrlError('');
-            setSavedNotice(false);
-          }
-        }, [isOpen, currentUrl]);
-
-        useEffect(() => {
-          if (!isOpen) return;
-          const handleKeyDown = (e) => {
-            if (e.key === 'Escape') onClose();
-          };
-          window.addEventListener('keydown', handleKeyDown);
-          return () => window.removeEventListener('keydown', handleKeyDown);
-        }, [isOpen, onClose]);
-
-        if (!isOpen) return null;
-
-        const handleSave = (event) => {
-          event.preventDefault();
-          const trimmed = urlInput.trim();
-          if (trimmed && !isValidAppsScriptUrl(trimmed)) {
-            setUrlError(
-              'Digite um endereço válido começando com https:// (gerado pelo Google Apps Script).'
-            );
-            return;
-          }
-          setUrlError('');
-          onSaveUrl(trimmed);
-          setSavedNotice(true);
-          window.setTimeout(() => setSavedNotice(false), 3000);
-        };
-
-        const handleCopyCode = async () => {
-          try {
-            await navigator.clipboard.writeText(codigoGs);
-            setCopiedCode(true);
-            window.setTimeout(() => setCopiedCode(false), 2500);
-          } catch {
-            const textarea = document.createElement('textarea');
-            textarea.value = codigoGs;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            setCopiedCode(true);
-            window.setTimeout(() => setCopiedCode(false), 2500);
-          }
-        };
-
-        return (
-          <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-[#091526]/60 p-0 backdrop-blur-xs sm:items-center sm:p-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="config-planilha-titulo"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) onClose();
-            }}
-          >
-            <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-3xl sm:p-8">
-              <div className="flex items-start justify-between gap-4 border-b border-[#E3ECF7] pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EAF2FC] text-[#0B4F9E]">
-                    <Icon.Settings className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h2
-                      id="config-planilha-titulo"
-                      className="text-[22px] font-bold leading-tight text-[#10203A]"
-                    >
-                      Configuração da Planilha e Drive
-                    </h2>
-                    <p className="mt-0.5 text-[16px] text-[#3B5275]">
-                      Área da coordenação para publicar o formulário no Google Apps Script
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label="Fechar configuração"
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#CBD9EC] text-[#1E3A63] transition-colors hover:bg-[#F0F6FD]"
-                >
-                  <Icon.X className="h-6 w-6" />
-                </button>
-              </div>
-
-              {isNativeHtmlService ? (
-                <div className="mt-6 flex items-start gap-3 rounded-2xl bg-[#F0FDF4] p-4 text-[17px] text-[#166534]">
-                  <Icon.CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0" />
-                  <span>
-                    <strong>Conectado pelo HtmlService:</strong> esta página já está rodando
-                    diretamente dentro do Google Apps Script e salvando na Planilha e no Drive.
-                  </span>
-                </div>
-              ) : (
-                <form onSubmit={handleSave} className="mt-6 space-y-4">
-                  <div>
-                    <label
-                      htmlFor="apps-script-url-input"
-                      className="block text-[18px] font-semibold text-[#10203A]"
-                    >
-                      Endereço (URL) do App da Web do Google Apps Script (opcional)
-                    </label>
-                    <p className="mt-1 text-[15px] text-[#3B5275]">
-                      Quando hospedar este <code className="font-mono text-[14px]">index.html</code>{' '}
-                      dentro do próprio Apps Script (via <code className="font-mono text-[14px]">HtmlService</code>),
-                      não precisa preencher URL alguma. Se estiver abrindo de fora, cole a URL{' '}
-                      <code className="rounded bg-[#EAF2FC] px-1.5 py-0.5 font-mono text-[14px] text-[#083872]">
-                        /exec
-                      </code>{' '}
-                      abaixo:
-                    </p>
-                    <input
-                      id="apps-script-url-input"
-                      type="url"
-                      value={urlInput}
-                      onChange={(e) => {
-                        setUrlInput(e.target.value);
-                        setUrlError('');
-                      }}
-                      placeholder="https://script.google.com/macros/s/.../exec"
-                      className="mt-2 w-full min-h-[52px] rounded-xl border-2 border-[#BCCCE0] bg-white px-4 py-2.5 font-mono text-[15px] text-[#10203A] placeholder:text-[#788CA8] focus:border-[#0B4F9E] focus:outline-none"
-                    />
-                    {urlError && (
-                      <p role="alert" className="mt-2 text-[16px] font-medium text-[#B91C1C]">
-                        {urlError}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      type="submit"
-                      className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-xl bg-[#0B4F9E] px-5 py-2.5 text-[17px] font-bold text-white transition-colors hover:bg-[#083872]"
-                    >
-                      <Icon.Save className="h-5 w-5 shrink-0" />
-                      <span>Salvar endereço</span>
-                    </button>
-
-                    {currentUrl && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUrlInput('');
-                          onSaveUrl('');
-                          setUrlError('');
-                        }}
-                        className="inline-flex min-h-[50px] items-center justify-center gap-2 rounded-xl border border-[#BCCCE0] bg-white px-4 py-2.5 text-[16px] font-semibold text-[#2C4366] transition-colors hover:bg-[#F0F6FD]"
-                      >
-                        <Icon.RotateCcw className="h-4 w-4 shrink-0" />
-                        <span>Voltar para Modo Demonstração</span>
-                      </button>
-                    )}
-
-                    {savedNotice && (
-                      <span className="inline-flex items-center gap-1.5 text-[16px] font-semibold text-[#166534]">
-                        <Icon.Check className="h-5 w-5 shrink-0" />
-                        <span>Configuração salva neste aparelho!</span>
-                      </span>
-                    )}
-                  </div>
-                </form>
-              )}
-
-              <div className="mt-8 border-t border-[#E3ECF7] pt-6">
-                <h3 className="text-[19px] font-bold text-[#10203A]">
-                  Passo a passo para hospedar na Planilha Google (HtmlService)
-                </h3>
-
-                <ol className="mt-3 list-decimal space-y-2.5 pl-5 text-[16px] leading-relaxed text-[#253A59]">
-                  <li>
-                    No <strong>Google Drive</strong>, crie uma pasta privada (ex.:{' '}
-                    <em>Documentos Participantes</em>) e copie o <strong>ID da pasta</strong> que
-                    aparece na URL depois de <code className="font-mono text-[14px]">/folders/</code>.
-                  </li>
-                  <li>
-                    Crie uma nova <strong>Planilha Google</strong> e acesse{' '}
-                    <strong>Extensões &gt; Apps Script</strong>.
-                  </li>
-                  <li>
-                    No arquivo <code className="font-mono text-[14px]">Código.gs</code>, cole o código
-                    abaixo e substitua{' '}
-                    <code className="font-mono text-[14px]">COLE_AQUI_O_ID_DA_PASTA_DO_DRIVE</code>{' '}
-                    pelo ID da sua pasta.
-                  </li>
-                  <li>
-                    No painel esquerdo do Apps Script, clique em <strong>+ &gt; HTML</strong>, dê o
-                    nome exatamente de <code className="font-mono text-[14px]">index</code> e cole
-                    o conteúdo completo deste arquivo <code className="font-mono text-[14px]">index.html</code>.
-                  </li>
-                  <li>
-                    Clique em <strong>Implantar &gt; Nova implantação &gt; App da Web</strong>, em{' '}
-                    <em>Executar como</em> deixe <strong>Eu</strong> e em <em>Quem pode acessar</em>{' '}
-                    escolha <strong>Qualquer pessoa</strong>.
-                  </li>
-                  <li>
-                    Autorize as permissões e compartilhe o link gerado diretamente com as
-                    participantes e voluntárias.
-                  </li>
-                </ol>
-
-                <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-[#C8D9EE] bg-[#F0F6FD] p-3.5 text-[15px] text-[#1D375C]">
-                  <Icon.ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#0B4F9E]" />
-                  <span>
-                    <strong>Privacidade (LGPD):</strong> as fotos dos documentos são salvas na pasta
-                    privada do Google Drive sem compartilhamento público. Somente quem tem acesso à
-                    pasta consegue visualizar os arquivos.
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h4 className="text-[17px] font-bold text-[#10203A]">
-                    Código completo: Codigo.gs
-                  </h4>
-                  <button
-                    type="button"
-                    onClick={handleCopyCode}
-                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border-2 border-[#0B4F9E] bg-white px-4 py-2 text-[16px] font-bold text-[#0B4F9E] transition-colors hover:bg-[#EAF2FC]"
-                  >
-                    {copiedCode ? (
-                      <React.Fragment>
-                        <Icon.Check className="h-5 w-5 shrink-0 text-[#166534]" />
-                        <span className="text-[#166534]">Código copiado!</span>
-                      </React.Fragment>
-                    ) : (
-                      <React.Fragment>
-                        <Icon.Copy className="h-5 w-5 shrink-0" />
-                        <span>Copiar código Codigo.gs</span>
-                      </React.Fragment>
-                    )}
-                  </button>
-                </div>
-
-                <pre className="mt-3 max-h-[280px] overflow-auto rounded-2xl border border-[#BCCCE0] bg-[#0F1B2D] p-4 font-mono text-[13px] leading-relaxed text-[#EBF2FA]">
-                  <code>{codigoGs}</code>
-                </pre>
-              </div>
-
-              <div className="mt-6 flex items-center justify-between gap-4 border-t border-[#E3ECF7] pt-5">
-                <a
-                  href="https://script.google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] font-semibold text-[#0B4F9E] underline underline-offset-4 hover:text-[#083872]"
-                >
-                  <span>Abrir Google Apps Script</span>
-                  <Icon.ExternalLink className="h-4 w-4 shrink-0" />
-                </a>
-
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="min-h-[48px] rounded-xl bg-[#EAF2FC] px-6 py-2.5 text-[17px] font-bold text-[#0A2E5C] transition-colors hover:bg-[#D6E6FA]"
-                >
-                  Fechar
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
       // =========================================================================
       // APLICAÇÃO PRINCIPAL
       // =========================================================================
@@ -1677,16 +1219,6 @@
         }
       }
 
-      function loadInitialAppsScriptUrl() {
-        try {
-          const stored = window.localStorage.getItem(STORAGE_KEYS.scriptUrl);
-          if (stored && stored.trim()) return stored.trim();
-        } catch {
-          // Ignora indisponibilidade de storage
-        }
-        return APPS_SCRIPT_URL.trim();
-      }
-
       function App() {
         const [formState, setFormState] = useState(loadInitialFormState);
         const [errors, setErrors] = useState({});
@@ -1698,12 +1230,7 @@
         const lastFetchedCepRef = useRef('');
 
         const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
-        const [isConfigOpen, setIsConfigOpen] = useState(false);
-        const [appsScriptUrl, setAppsScriptUrl] = useState(loadInitialAppsScriptUrl);
         const [successData, setSuccessData] = useState(null);
-
-        const isNativeHtmlService = hasGoogleScriptRun();
-        const isDemoMode = !isNativeHtmlService && !appsScriptUrl.trim();
 
         useEffect(() => {
           if (successData) return;
@@ -1825,7 +1352,7 @@
           setIsSubmitting(true);
           try {
             const payload = buildSubmissionPayload(formState, validation.computedAge);
-            const response = await submitRegistration(payload, appsScriptUrl);
+            const response = await submitRegistration(payload, APPS_SCRIPT_URL);
 
             if (!response.ok || !response.protocolo) {
               const errMsg = response.error || 'Não foi possível finalizar o cadastro.';
@@ -1870,25 +1397,9 @@
           window.scrollTo({ top: 0, behavior: 'auto' });
         };
 
-        const handleSaveConfigUrl = (newUrl) => {
-          setAppsScriptUrl(newUrl);
-          try {
-            if (newUrl) {
-              window.localStorage.setItem(STORAGE_KEYS.scriptUrl, newUrl);
-            } else {
-              window.localStorage.removeItem(STORAGE_KEYS.scriptUrl);
-            }
-          } catch {
-            // Ignora erro de storage
-          }
-        };
-
         return (
           <div className="min-h-screen flex flex-col bg-[#F4F7FB] text-[#10203A]">
-            <ProjectHeader
-              isDemoMode={isDemoMode}
-              onOpenConfig={() => setIsConfigOpen(true)}
-            />
+            <ProjectHeader />
 
             <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-10 lg:px-8">
               {successData ? (
@@ -2351,32 +1862,14 @@
             </main>
 
             <footer className="border-t border-[#D7E3F2] bg-white/80 px-4 py-6 text-[#3B5275] sm:px-6 lg:px-8">
-              <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-[16px]">
+              <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-4 text-center text-[16px]">
                 <p>{PROJECT_CONFIG.name} · Cadastro das Participantes</p>
-
-                <button
-                  type="button"
-                  onClick={() => setIsConfigOpen(true)}
-                  aria-label="Configuração da Planilha e Drive"
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-2 text-[15px] font-medium text-[#3B5275] transition-colors hover:bg-[#EAF2FC] hover:text-[#10203A]"
-                >
-                  <Icon.Settings className="h-5 w-5 shrink-0" />
-                  <span>Configuração da Planilha e Drive</span>
-                </button>
               </div>
             </footer>
 
             <SizeChartModal
               isOpen={isSizeChartOpen}
               onClose={() => setIsSizeChartOpen(false)}
-            />
-
-            <AdminConfigModal
-              isOpen={isConfigOpen}
-              isNativeHtmlService={isNativeHtmlService}
-              currentUrl={appsScriptUrl}
-              onSaveUrl={handleSaveConfigUrl}
-              onClose={() => setIsConfigOpen(false)}
             />
           </div>
         );
